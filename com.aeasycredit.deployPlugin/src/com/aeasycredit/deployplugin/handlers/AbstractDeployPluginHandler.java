@@ -160,15 +160,20 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected void release(ExecutionEvent event) throws Exception {
         runCmd(event, "Release", "release.sh");
     }
-
-    private void checkParam(String projectPath, String cmd) throws IOException {
+    
+    private String getParentProject(String projectPath, String cmd) throws IOException {
         String gitHome = System.getenv("GIT_HOME");
         if(StringUtils.isBlank(gitHome)) {
             throw new FileNotFoundException("GIT_HOME env must be not empty.");
         }
         if (!new File(projectPath + "\\" + cmd).exists()) {
-            throw new FileNotFoundException(cmd + " file not fonund.");
+            String parent = new File(projectPath).getParent();
+            if(StringUtils.isBlank(parent)) {
+                throw new FileNotFoundException(cmd + " file not fonund.");
+            }
+            return getParentProject(parent, cmd);
         }
+        return projectPath;
     }
     
     private String input(ExecutionEvent event, String name) throws Exception {
@@ -204,21 +209,21 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                             Project prj = (Project) itObj;
                             project = prj.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
-                            checkParam(projectPath, cmd);
+                            projectPath = getParentProject(projectPath, cmd);
                             cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
                         }
                         else if (itObj instanceof JavaProject) {
                             JavaProject jproject = (JavaProject) itObj;
                             project = jproject.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
-                            checkParam(projectPath, cmd);
+                            projectPath = getParentProject(projectPath, cmd);
                             cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
                         } else if (itObj instanceof PackageFragment) {
                             PackageFragment packageFragment = (PackageFragment) itObj;
                             IJavaProject jproject = packageFragment.getJavaProject();
                             project = jproject.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
-                            checkParam(projectPath, cmd);
+                            projectPath = getParentProject(projectPath, cmd);
                             cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
                         }
                     }
