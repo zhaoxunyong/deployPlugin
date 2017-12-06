@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
    <feature url="features/com.aeasycredit.deployPlugin.feature_1.0.1.jar" id="com.aeasycredit.deployPlugin.feature" version="1.0.1">
-      <category name="com.chinatime.slicePlugin.updatesite"/>
+      <category name="com.aeasycredit.deployPlugin.updatesite"/>
    </feature>
-   <category-def name="com.chinatime.slicePlugin.updatesite" label="aeasycredit deploy plugin"/>
+   <category-def name="com.aeasycredit.deployPlugin.updatesite" label="aeasycredit deploy plugin"/>
 </site>

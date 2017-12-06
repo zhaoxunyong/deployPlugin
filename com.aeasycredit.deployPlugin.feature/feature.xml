@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="com.aeasycredit.deployPlugin.feature"
-      label="Aeasycredit.DeployPlugin"
+      label="com.aeasycredit.deployplugin"
       version="1.0.1"
-      provider-name="Chinatime"
+      provider-name="AEASYCREDIT"
       plugin="com.aeasycredit.DeployPlugin">
 
-   <description url="http://www.aeasycredit.com/">
-      http://www.aeasycredit.com/
+   <description url="http://www.aeasycredit.com/description">
+      http://www.aeasycredit.com/description
    </description>
 
    <copyright url="http://www.aeasycredit.com/copyright">
-      http://www.aeasycredit.com/
+      http://www.aeasycredit.com/copyright
    </copyright>
 
    <license url="http://www.aeasycredit.com/license">
-      http://www.aeasycredit.com/
+      http://www.aeasycredit.com/license
    </license>
+
+   <url>
+      <update label="com.aeasycredit.deployplugin" url="http://192.168.107.195:8089/"/>
+   </url>
+
+   <plugin
+         id="com.aeasycredit.DeployPlugin"
+         download-size="0"
+         install-size="0"
+         version="1.0.1"
+         unpack="false"/>
 
 </feature>
