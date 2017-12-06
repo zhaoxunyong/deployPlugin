@@ -1,0 +1,14 @@
+.classpath
+.project
+.gradle
+.settings
+.pmd
+.checkstyle
+.eclipse-pmd
+target/
+.idea
+.springBeans
+.factorypath
+.apt_generated/
+bin/
+transaction-logs/

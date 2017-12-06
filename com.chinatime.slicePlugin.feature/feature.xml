@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.aeasycredit.deployPlugin.feature"
+      label="Aeasycredit.DeployPlugin"
+      version="1.0.1"
+      provider-name="Chinatime"
+      plugin="com.aeasycredit.DeployPlugin">
+
+   <description url="http://www.aeasycredit.com/">
+      http://www.aeasycredit.com/
+   </description>
+
+   <copyright url="http://www.aeasycredit.com/copyright">
+      http://www.aeasycredit.com/
+   </copyright>
+
+   <license url="http://www.aeasycredit.com/license">
+      http://www.aeasycredit.com/
+   </license>
+
+</feature>
