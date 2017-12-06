@@ -5,62 +5,6 @@
    <extension
          point="org.eclipse.ui.popupMenus">
       <objectContribution
-            objectClass="org.eclipse.ui.IEditorInput"
-            id="com.aeasycredit.DeployPlugin.IEditorInputs">
-         <menu
-               label="Aeasycredit Plugin"
-               path="additions"
-               id="com.aeasycredit.DeployPlugin.menu1">
-            <separator
-                  name="com.aeasycredit.deployplugin.IEditorInputsGroup">
-            </separator>
-         </menu>
-         <action
-               class="com.aeasycredit.deployplugin.popup.actions.ChangeVersionAction:com.aeasycredit.DeployPlugin.commands.changeVersionCommand"
-               definitionId="com.aeasycredit.DeployPlugin.commands.changeVersionCommand"
-               enablesFor="1"
-               id="com.aeasycredit.DeployPlugin.changeVersionAction"
-               label="ChangeVersion"
-               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.deployplugin.IEditorInputsGroup">
-         </action>
-         <action
-               class="com.aeasycredit.deployplugin.popup.actions.ReleaseAction:com.aeasycredit.DeployPlugin.commands.releaseCommand"
-               definitionId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
-               enablesFor="1"
-               id="com.aeasycredit.DeployPlugin.releaseAction"
-               label="Release"
-               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.deployplugin.IEditorInputsGroup">
-         </action>
-      </objectContribution>
-      <objectContribution
-            id="com.aeasycredit.DeployPlugin.Files"
-            objectClass="org.eclipse.core.resources.IFile">
-         <menu
-               id="com.aeasycredit.DeployPlugin.menu1"
-               label="Aeasycredit Plugin"
-               path="additions">
-            <separator
-                  name="com.chinatime.sliceplugin.FilesGroup">
-            </separator>
-         </menu>
-         <action
-               class="com.aeasycredit.deployplugin.popup.actions.ChangeVersionAction:com.aeasycredit.DeployPlugin.commands.changeVersionCommand"
-               definitionId="com.aeasycredit.DeployPlugin.commands.changeVersionCommand"
-               enablesFor="1"
-               id="com.aeasycredit.DeployPlugin.changeVersionAction"
-               label="ChangeVersion"
-               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.chinatime.sliceplugin.FilesGroup">
-         </action>
-         <action
-               class="com.aeasycredit.deployplugin.popup.actions.ReleaseAction:com.aeasycredit.DeployPlugin.commands.releaseCommand"
-               definitionId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
-               enablesFor="1"
-               id="com.aeasycredit.DeployPlugin.releaseAction"
-               label="Release"
-               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.chinatime.sliceplugin.FilesGroup">
-         </action>
-      </objectContribution>
-      <objectContribution
             id="com.aeasycredit.DeployPlugin.JavaElements"
             objectClass="org.eclipse.jdt.core.IJavaElement">
          <menu

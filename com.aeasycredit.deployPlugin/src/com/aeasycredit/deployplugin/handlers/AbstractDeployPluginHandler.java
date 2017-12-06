@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -100,7 +101,11 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                         Iterator iterator = ts.iterator();
                         while (iterator.hasNext()) {
                             Object itObj = iterator.next();
-                            if (itObj instanceof JavaProject) {
+                            if (itObj instanceof Project) {
+                                Project prj = (Project) itObj;
+                                project = prj.getProject();
+                                break;
+                            } else if (itObj instanceof JavaProject) {
                                 JavaProject jproject = (JavaProject) itObj;
                                 project = jproject.getProject();
                                 break;
@@ -195,7 +200,14 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                     Iterator iterator = ts.iterator();
                     while (iterator.hasNext()) {
                         Object itObj = iterator.next();
-                        if (itObj instanceof JavaProject) {
+                        if (itObj instanceof Project) {
+                            Project prj = (Project) itObj;
+                            project = prj.getProject();
+                            String projectPath = project.getLocation().toFile().getPath();
+                            checkParam(projectPath, cmd);
+                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
+                        }
+                        else if (itObj instanceof JavaProject) {
                             JavaProject jproject = (JavaProject) itObj;
                             project = jproject.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
