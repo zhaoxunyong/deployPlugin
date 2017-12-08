@@ -66,8 +66,8 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     private IProject project;
     protected MessageConsoleStream console;
-    protected final static String DEPLOY_BAT = "deploy.bat";
-    protected final static String DEPLOY_ALL_BAT = "deployAll.bat";
+    protected final static String CHANGEVERSION_BAT = "changeVersion.sh";
+    protected final static String RELEASE_BAT = "release.sh";
 
     /**
      * 
@@ -154,11 +154,11 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void changeVersion(ExecutionEvent event) throws Exception {
-        runCmd(event, "Change version", "changeVersion.sh");
+        runCmd(event, "Change version", CHANGEVERSION_BAT);
     }
 
     protected void release(ExecutionEvent event) throws Exception {
-        runCmd(event, "Release", "release.sh");
+        runCmd(event, "Release", RELEASE_BAT);
     }
     
     private String getParentProject(String projectPath, String cmd) throws IOException {
@@ -169,7 +169,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if (!new File(projectPath + "\\" + cmd).exists()) {
             String parent = new File(projectPath).getParent();
             if(StringUtils.isBlank(parent)) {
-                throw new FileNotFoundException(cmd + " file not fonund.");
+                throw new FileNotFoundException(cmd + " not found.");
             }
             return getParentProject(parent, cmd);
         }
