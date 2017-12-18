@@ -182,11 +182,11 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                 "Enter new version", "", null);
         String input = "";
         if (dlg.open() == Window.OK) {
-            // User clicked OK; run perl
+            // User clicked OK
             input = dlg.getValue();
-        }
-        if(StringUtils.isBlank(input)) {
-            throw new DeployPluginException("New version must be not empty.");
+            if(StringUtils.isBlank(input)) {
+                throw new DeployPluginException("New version must be not empty.");
+            }
         }
         return input;
     }
@@ -205,26 +205,30 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                     Iterator iterator = ts.iterator();
                     while (iterator.hasNext()) {
                         Object itObj = iterator.next();
+                        String version = input(event, name);
+                        if(StringUtils.isBlank(version)) {
+                            return;
+                        }
                         if (itObj instanceof Project) {
                             Project prj = (Project) itObj;
                             project = prj.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
                             projectPath = getParentProject(projectPath, cmd);
-                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
+                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, version));
                         }
                         else if (itObj instanceof JavaProject) {
                             JavaProject jproject = (JavaProject) itObj;
                             project = jproject.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
                             projectPath = getParentProject(projectPath, cmd);
-                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
+                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, version));
                         } else if (itObj instanceof PackageFragment) {
                             PackageFragment packageFragment = (PackageFragment) itObj;
                             IJavaProject jproject = packageFragment.getJavaProject();
                             project = jproject.getProject();
                             String projectPath = project.getLocation().toFile().getPath();
                             projectPath = getParentProject(projectPath, cmd);
-                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, input(event, name)));
+                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, version));
                         }
                     }
 
@@ -243,31 +247,31 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void runJob(final String name, final String cmd, List<CmdBuilder> cmdBuilders) throws CoreException {
-        boolean isConfirm = MessageDialog.openConfirm(shell, "process confirm?", project.getName() + " process confirm?");
+//        boolean isConfirm = MessageDialog.openConfirm(shell, "process confirm?", project.getName() + " process confirm?");
 
-        if (isConfirm) {
+//        if (isConfirm) {
 
-            // create action to be called after the action is completed
-            // this action shows a success dialog if the job executed without
-            // an exception, otherwise it shows an error dialog
-            final CompletionAction completionAction = new CompletionAction(DeployPluginHelper.PLUGIN_ID, shell, this,
-                    console);
-            completionAction.setOkTitle(name + " sucess");
-            completionAction.setOkMsg("Sucessfully executed " + name);
-            completionAction.setFailTitle(name + " failed");
-            completionAction.setFailMsg("There was an exception while executing " + name);
+        // create action to be called after the action is completed
+        // this action shows a success dialog if the job executed without
+        // an exception, otherwise it shows an error dialog
+        final CompletionAction completionAction = new CompletionAction(DeployPluginHelper.PLUGIN_ID, shell, this,
+                console);
+        completionAction.setOkTitle(name + " sucess");
+        completionAction.setOkMsg("Sucessfully executed " + name);
+        completionAction.setFailTitle(name + " failed");
+        completionAction.setFailMsg("There was an exception while executing " + name);
 
-            final ClientJob job = new ClientJob("DeployPlugin:" + name, cmdBuilders, completionAction);
+        final ClientJob job = new ClientJob("DeployPlugin:" + name, cmdBuilders, completionAction);
 
-            // if short action, otherwise is long Job.LONG
-            job.setPriority(Job.SHORT);
-            // show a dialog immediately
-            job.setUser(false);
-            // job.setSystem(true);
-            // start as soon as possible
-            job.schedule();
-            
-            /*String mode = ILaunchManager.RUN_MODE;
+        // if short action, otherwise is long Job.LONG
+        job.setPriority(Job.SHORT);
+        // show a dialog immediately
+        job.setUser(false);
+        // job.setSystem(true);
+        // start as soon as possible
+        job.schedule();
+        
+        /*String mode = ILaunchManager.RUN_MODE;
             if (debug)
                 mode = ILaunchManager.DEBUG_MODE;
             else
@@ -311,18 +315,18 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                 }
             };
             job.addJobChangeListener(listener);*/
-            
-            // job.addJobChangeListener(new JobChangeAdapter() {
-            // @Override
-            // public void done(IJobChangeEvent event) {
-            // if (event.getResult().isOK()) {
-            // SlicePluginTools.success(shell, name+" completed successfully");
-            // } else {
-            // MessageDialog.openError(shell, name+" did not complete
-            // successfully");
-            // }
-            // }
-            // });
-        }
+        
+        // job.addJobChangeListener(new JobChangeAdapter() {
+        // @Override
+        // public void done(IJobChangeEvent event) {
+        // if (event.getResult().isOK()) {
+        // SlicePluginTools.success(shell, name+" completed successfully");
+        // } else {
+        // MessageDialog.openError(shell, name+" did not complete
+        // successfully");
+        // }
+        // }
+        // });
+//        }
     }
 }
