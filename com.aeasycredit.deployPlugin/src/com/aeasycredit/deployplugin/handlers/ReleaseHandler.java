@@ -1,11 +1,3 @@
-/* 
- * Copyright (C), 2014-2016, 时代际客(深圳)软件有限公司
- * File Name: @(#)DeployAllHandler.java
- * Encoding UTF-8
- * Author: zhaoxunyong
- * Version: 3.0
- * Date: Feb 24, 2016
- */
 package com.aeasycredit.deployplugin.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;

@@ -1,11 +1,3 @@
-/* 
- * Copyright (C), 2014-2016, 时代际客(深圳)软件有限公司
- * File Name: @(#)CmdParam.java
- * Encoding UTF-8
- * Author: zhaoxunyong
- * Version: 3.0
- * Date: Feb 22, 2016
- */
 package com.aeasycredit.deployplugin;
 
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
