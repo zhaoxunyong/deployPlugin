@@ -31,6 +31,14 @@
                label="Release"
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.JavaElementsGroup">
          </action>
+         <action
+               class="com.aeasycredit.deployplugin.popup.actions.MergeAction:com.aeasycredit.DeployPlugin.commands.mergeCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.mergeCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.mergeAction"
+               label="Merge"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.JavaElementsGroup">
+         </action>
       </objectContribution>
       <objectContribution
             id="com.aeasycredit.DeployPlugin.Project"
@@ -59,6 +67,14 @@
                label="Release"
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
          </action>
+         <action
+               class="com.aeasycredit.deployplugin.popup.actions.MergeAction:com.aeasycredit.DeployPlugin.commands.mergeCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.mergeCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.mergeAction"
+               label="Merge"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
+         </action>
       </objectContribution>
    </extension>
    <extension
@@ -77,6 +93,11 @@
             id="com.aeasycredit.DeployPlugin.commands.releaseCommand"
             name="Release Command">
       </command>
+      <command
+            categoryId="com.aeasycredit.DeployPlugin.commands.category"
+            id="com.aeasycredit.DeployPlugin.commands.mergeCommand"
+            name="Merge Command">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -87,6 +108,10 @@
       <handler
             class="com.aeasycredit.deployplugin.handlers.ReleaseHandler"
             commandId="com.aeasycredit.DeployPlugin.commands.releaseCommand">
+      </handler>
+      <handler
+            class="com.aeasycredit.deployplugin.handlers.MergeHandler"
+            commandId="com.aeasycredit.DeployPlugin.commands.mergeCommand">
       </handler>
    </extension>
    <extension
@@ -102,6 +127,12 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Ctrl+Shift+J">
+      </key>
+      <key
+            commandId="com.aeasycredit.DeployPlugin.commands.mergeCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+Shift+K">
       </key>
    </extension>
    <extension
@@ -122,8 +153,15 @@
                   commandId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
                   icon="icons/deployAll.gif"
                   id="com.aeasycredit.DeployPlugin.toolbars.releaseCommand"
-                  label="Rlease"
+                  label="Release"
                   tooltip="Release">
+            </command>
+            <command
+                  commandId="com.aeasycredit.DeployPlugin.commands.mergeCommand"
+                  icon="icons/linux.gif"
+                  id="com.aeasycredit.DeployPlugin.toolbars.mergeCommand"
+                  label="Merge"
+                  tooltip="Merge">
             </command>
          </toolbar>
       </menuContribution>

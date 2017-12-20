@@ -3,9 +3,12 @@ package com.aeasycredit.deployplugin.handlers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -54,8 +57,8 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     private IProject project;
     protected MessageConsoleStream console;
-    protected final static String CHANGEVERSION_BAT = "changeVersion.sh";
-    protected final static String RELEASE_BAT = "release.sh";
+    protected final static String CHANGEVERSION_BAT = "./changeVersion.sh";
+    protected final static String RELEASE_BAT = "./release.sh";
 
     /**
      * 
@@ -142,13 +145,13 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void changeVersion(ExecutionEvent event) throws Exception {
-        runCmd(event, "Change version", CHANGEVERSION_BAT);
+        runCmd(event, "Change version", CHANGEVERSION_BAT, "newVersion");
     }
 
     protected void release(ExecutionEvent event) throws Exception {
-        runCmd(event, "Release", RELEASE_BAT);
+        runCmd(event, "Release", RELEASE_BAT, "BranchVersion test|release");
     }
-    
+
     private String getParentProject(String projectPath, String cmd) throws IOException {
         String gitHome = System.getenv("GIT_HOME");
         if(StringUtils.isBlank(gitHome)) {
@@ -164,39 +167,99 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return projectPath;
     }
     
-    private String input(ExecutionEvent event, String name) throws Exception {
+    private String input(ExecutionEvent event, String name, String example) throws Exception {
         InputDialog dlg = new InputDialog(
                 HandlerUtil.getActiveShellChecked(event), name,
-                "Enter new version", "", null);
+                "Enter parameter, example: " + example, "", null);
         String input = "";
         if (dlg.open() == Window.OK) {
             // User clicked OK
             input = dlg.getValue();
             if(StringUtils.isBlank(input)) {
-                throw new DeployPluginException("New version must be not empty.");
+                throw new DeployPluginException("Parameter must be not empty.");
             }
         }
         return input;
     }
+    
+    private void processMergeScript(String tempFolder) throws IOException {
+        String projectPath = project.getLocation().toFile().getPath().replace("\\", "\\\\");
+        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
+        String str = IOUtils.toString(input);
+        String mergeScript = str.replace("#{project}", projectPath);
+        File file = new File(tempFolder+"/merge.sh");
+        FileUtils.writeStringToFile(file, mergeScript);
+    }
 
     @SuppressWarnings({ "rawtypes" })
-    private void runCmd(ExecutionEvent event, String name, String cmd) throws Exception {
+    protected void merge(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
         if (selection.isEmpty() || selection instanceof TextSelection) {
             project = null;
 //              MessageDialog.openError(shell, name, "No project or package selected.");
             throw new Exception("No project or package selected.");
         } else {
+            String version = input(event, name, "branchFromVersion branchToVersion");
+            if(StringUtils.isBlank(version)) {
+                return;
+            }
             if (selection instanceof TreeSelection) {
                 TreeSelection ts = (TreeSelection) selection;
                 if (!ts.isEmpty()) {
                     Iterator iterator = ts.iterator();
                     while (iterator.hasNext()) {
                         Object itObj = iterator.next();
-                        String version = input(event, name);
-                        if(StringUtils.isBlank(version)) {
-                            return;
+                        if (itObj instanceof Project) {
+                            Project prj = (Project) itObj;
+                            project = prj.getProject();
                         }
+                        else if (itObj instanceof JavaProject) {
+                            JavaProject jproject = (JavaProject) itObj;
+                            project = jproject.getProject();
+                        } else if (itObj instanceof PackageFragment) {
+                            PackageFragment packageFragment = (PackageFragment) itObj;
+                            IJavaProject jproject = packageFragment.getJavaProject();
+                            project = jproject.getProject();
+                        }
+                    }
+
+                }
+            }
+            if (project == null) {
+                throw new Exception("No project or package selected.");
+            }
+
+            String tempFolder = System.getenv("TEMP");
+            processMergeScript(tempFolder);
+            
+            cmdBuilders.add(new CmdBuilder(tempFolder, "./merge.sh", version));
+            if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+                runJob(name, cmdBuilders);
+            } else {
+//                  MessageDialog.openError(shell, name, "No project or pakcage selected.");
+                throw new Exception("No project or package selected.");
+            }
+        }
+    }
+
+    @SuppressWarnings({ "rawtypes" })
+    private void runCmd(ExecutionEvent event, String name, String cmd, String example) throws Exception {
+        List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
+        if (selection.isEmpty() || selection instanceof TextSelection) {
+            project = null;
+//              MessageDialog.openError(shell, name, "No project or package selected.");
+            throw new Exception("No project or package selected.");
+        } else {
+            String version = input(event, name, example);
+            if(StringUtils.isBlank(version)) {
+                return;
+            }
+            if (selection instanceof TreeSelection) {
+                TreeSelection ts = (TreeSelection) selection;
+                if (!ts.isEmpty()) {
+                    Iterator iterator = ts.iterator();
+                    while (iterator.hasNext()) {
+                        Object itObj = iterator.next();
                         if (itObj instanceof Project) {
                             Project prj = (Project) itObj;
                             project = prj.getProject();
@@ -226,7 +289,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                 throw new Exception("No project or package selected.");
             }
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-                runJob(name, cmd, cmdBuilders);
+                runJob(name, cmdBuilders);
             } else {
 //                  MessageDialog.openError(shell, name, "No project or pakcage selected.");
                 throw new Exception("No project or package selected.");
@@ -234,7 +297,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
     }
 
-    protected void runJob(final String name, final String cmd, List<CmdBuilder> cmdBuilders) throws CoreException {
+    protected void runJob(final String name, List<CmdBuilder> cmdBuilders) throws CoreException {
 //        boolean isConfirm = MessageDialog.openConfirm(shell, "process confirm?", project.getName() + " process confirm?");
 
 //        if (isConfirm) {
