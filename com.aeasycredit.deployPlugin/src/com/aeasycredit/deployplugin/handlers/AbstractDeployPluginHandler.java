@@ -59,6 +59,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected MessageConsoleStream console;
     protected final static String CHANGEVERSION_BAT = "./changeVersion.sh";
     protected final static String RELEASE_BAT = "./release.sh";
+    protected final static String MERGE_BAT = "./merge.sh";
 
     /**
      * 
@@ -183,115 +184,47 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
     
     private void processMergeScript(String tempFolder) throws IOException {
-        String projectPath = project.getLocation().toFile().getPath().replace("\\", "\\\\");
-        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
-        String str = IOUtils.toString(input);
-        String mergeScript = str.replace("#{project}", projectPath);
-        File file = new File(tempFolder+"/merge.sh");
+        String mergeName = MERGE_BAT.replace("./", "");
+        String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = getParentProject(projectPath, MERGE_BAT);
+        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+//        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
+//        String str = IOUtils.toString(input);
+        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+mergeName), "UTF-8");
+        String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
+        File file = new File(tempFolder+"/"+mergeName);
         FileUtils.writeStringToFile(file, mergeScript);
     }
 
-    @SuppressWarnings({ "rawtypes" })
     protected void merge(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-        if (selection.isEmpty() || selection instanceof TextSelection) {
-            project = null;
-//              MessageDialog.openError(shell, name, "No project or package selected.");
-            throw new Exception("No project or package selected.");
-        } else {
-            String version = input(event, name, "branchFromVersion branchToVersion");
-            if(StringUtils.isBlank(version)) {
-                return;
-            }
-            if (selection instanceof TreeSelection) {
-                TreeSelection ts = (TreeSelection) selection;
-                if (!ts.isEmpty()) {
-                    Iterator iterator = ts.iterator();
-                    while (iterator.hasNext()) {
-                        Object itObj = iterator.next();
-                        if (itObj instanceof Project) {
-                            Project prj = (Project) itObj;
-                            project = prj.getProject();
-                        }
-                        else if (itObj instanceof JavaProject) {
-                            JavaProject jproject = (JavaProject) itObj;
-                            project = jproject.getProject();
-                        } else if (itObj instanceof PackageFragment) {
-                            PackageFragment packageFragment = (PackageFragment) itObj;
-                            IJavaProject jproject = packageFragment.getJavaProject();
-                            project = jproject.getProject();
-                        }
-                    }
 
-                }
-            }
-            if (project == null) {
-                throw new Exception("No project or package selected.");
-            }
-
+        String version = input(event, name, "branchFromVersion branchToVersion");
+        if(StringUtils.isNotBlank(version)) {
             String tempFolder = System.getenv("TEMP");
             processMergeScript(tempFolder);
             
-            cmdBuilders.add(new CmdBuilder(tempFolder, "./merge.sh", version));
+            cmdBuilders.add(new CmdBuilder(tempFolder, MERGE_BAT, version));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 runJob(name, cmdBuilders);
             } else {
-//                  MessageDialog.openError(shell, name, "No project or pakcage selected.");
+//              MessageDialog.openError(shell, name, "No project or pakcage selected.");
                 throw new Exception("No project or package selected.");
             }
         }
     }
 
-    @SuppressWarnings({ "rawtypes" })
     private void runCmd(ExecutionEvent event, String name, String cmd, String example) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-        if (selection.isEmpty() || selection instanceof TextSelection) {
-            project = null;
-//              MessageDialog.openError(shell, name, "No project or package selected.");
-            throw new Exception("No project or package selected.");
-        } else {
-            String version = input(event, name, example);
-            if(StringUtils.isBlank(version)) {
-                return;
-            }
-            if (selection instanceof TreeSelection) {
-                TreeSelection ts = (TreeSelection) selection;
-                if (!ts.isEmpty()) {
-                    Iterator iterator = ts.iterator();
-                    while (iterator.hasNext()) {
-                        Object itObj = iterator.next();
-                        if (itObj instanceof Project) {
-                            Project prj = (Project) itObj;
-                            project = prj.getProject();
-                            String projectPath = project.getLocation().toFile().getPath();
-                            projectPath = getParentProject(projectPath, cmd);
-                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, version));
-                        }
-                        else if (itObj instanceof JavaProject) {
-                            JavaProject jproject = (JavaProject) itObj;
-                            project = jproject.getProject();
-                            String projectPath = project.getLocation().toFile().getPath();
-                            projectPath = getParentProject(projectPath, cmd);
-                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, version));
-                        } else if (itObj instanceof PackageFragment) {
-                            PackageFragment packageFragment = (PackageFragment) itObj;
-                            IJavaProject jproject = packageFragment.getJavaProject();
-                            project = jproject.getProject();
-                            String projectPath = project.getLocation().toFile().getPath();
-                            projectPath = getParentProject(projectPath, cmd);
-                            cmdBuilders.add(new CmdBuilder(projectPath, cmd, version));
-                        }
-                    }
-
-                }
-            }
-            if (project == null) {
-                throw new Exception("No project or package selected.");
-            }
+        String params = input(event, name, example);
+        if(StringUtils.isNotBlank(params)) {
+            String projectPath = project.getLocation().toFile().getPath();
+            String rootProjectPath = getParentProject(projectPath, cmd);
+            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmd, params));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 runJob(name, cmdBuilders);
             } else {
-//                  MessageDialog.openError(shell, name, "No project or pakcage selected.");
+//                MessageDialog.openError(shell, name, "No project or pakcage selected.");
                 throw new Exception("No project or package selected.");
             }
         }
