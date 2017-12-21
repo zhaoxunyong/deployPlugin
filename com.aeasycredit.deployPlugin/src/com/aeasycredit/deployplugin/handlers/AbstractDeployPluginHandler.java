@@ -146,11 +146,15 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void changeVersion(ExecutionEvent event) throws Exception {
-        runCmd(event, "Change version", CHANGEVERSION_BAT, "newVersion");
+        changeVersion(event, "Change version");
     }
 
     protected void release(ExecutionEvent event) throws Exception {
-        runCmd(event, "Release", RELEASE_BAT, "BranchVersion test|release");
+        release(event, "Release");
+    }
+
+    protected void merge(ExecutionEvent event) throws Exception {
+        merge(event, "Merge");
     }
 
     private String getParentProject(String projectPath, String cmd) throws IOException {
@@ -183,6 +187,32 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return input;
     }
     
+    private void processChangeVersionScript(String tempFolder) throws IOException {
+        String changVersionName = CHANGEVERSION_BAT.replace("./", "");
+        String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = getParentProject(projectPath, CHANGEVERSION_BAT);
+        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+//        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
+//        String str = IOUtils.toString(input);
+        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+changVersionName), "UTF-8");
+        String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
+        File file = new File(tempFolder+"/"+changVersionName);
+        FileUtils.writeStringToFile(file, mergeScript);
+    }
+    
+    private void processRleaseScript(String tempFolder) throws IOException {
+        String releaseName = RELEASE_BAT.replace("./", "");
+        String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = getParentProject(projectPath, MERGE_BAT);
+        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+//        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
+//        String str = IOUtils.toString(input);
+        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+releaseName), "UTF-8");
+        String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
+        File file = new File(tempFolder+"/"+releaseName);
+        FileUtils.writeStringToFile(file, mergeScript);
+    }
+    
     private void processMergeScript(String tempFolder) throws IOException {
         String mergeName = MERGE_BAT.replace("./", "");
         String projectPath = project.getLocation().toFile().getPath();
@@ -196,7 +226,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         FileUtils.writeStringToFile(file, mergeScript);
     }
 
-    protected void merge(ExecutionEvent event, String name) throws Exception {
+    private void merge(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
 
         String version = input(event, name, "branchFromVersion branchToVersion");
@@ -214,13 +244,37 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
     }
 
-    private void runCmd(ExecutionEvent event, String name, String cmd, String example) throws Exception {
+    private void changeVersion(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-        String params = input(event, name, example);
+        String params = input(event, name, "newVersion");
         if(StringUtils.isNotBlank(params)) {
-            String projectPath = project.getLocation().toFile().getPath();
-            String rootProjectPath = getParentProject(projectPath, cmd);
-            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmd, params));
+//            String projectPath = project.getLocation().toFile().getPath();
+//            String rootProjectPath = getParentProject(projectPath, cmd);
+            
+            String tempFolder = System.getenv("TEMP");
+            processChangeVersionScript(tempFolder);
+            
+            cmdBuilders.add(new CmdBuilder(tempFolder, CHANGEVERSION_BAT, params));
+            if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+                runJob(name, cmdBuilders);
+            } else {
+//                MessageDialog.openError(shell, name, "No project or pakcage selected.");
+                throw new Exception("No project or package selected.");
+            }
+        }
+    }
+
+    private void release(ExecutionEvent event, String name) throws Exception {
+        List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
+        String params = input(event, name, "BranchVersion test|release");
+        if(StringUtils.isNotBlank(params)) {
+//            String projectPath = project.getLocation().toFile().getPath();
+//            String rootProjectPath = getParentProject(projectPath, cmd);
+            
+            String tempFolder = System.getenv("TEMP");
+            processRleaseScript(tempFolder);
+            
+            cmdBuilders.add(new CmdBuilder(tempFolder, RELEASE_BAT, params));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 runJob(name, cmdBuilders);
             } else {

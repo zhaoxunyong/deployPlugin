@@ -34,7 +34,7 @@ public class MergeHandler extends AbstractDeployPluginHandler {
         clearConsole();
         try {
             this.setProject(project());
-            merge(event, "Merge");
+            merge(event);
 		} catch (Exception e) {
 			MessageDialog.openError(shell, "release error", e.getMessage());
 		}
