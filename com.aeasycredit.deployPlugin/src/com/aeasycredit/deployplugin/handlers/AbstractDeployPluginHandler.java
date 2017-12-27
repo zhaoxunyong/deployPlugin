@@ -24,11 +24,13 @@ import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.aeasycredit.deployplugin.CmdBuilder;
@@ -172,10 +174,19 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return projectPath;
     }
     
-    private String input(ExecutionEvent event, String name, String example) throws Exception {
+    /**
+     * http://www.vogella.com/tutorials/EclipseDialogs/article.html
+     */
+    private String input(ExecutionEvent event, String name, String defaultValue, String example) throws Exception {
+        
+        /*ElementListSelectionDialog dlg =
+                new ElementListSelectionDialog(shell, new LabelProvider());
+            dlg.setElements(new String[] { "Linux", "Mac", "Windows" });
+            dlg.setTitle("Which operating system are you using");*/
+        
         InputDialog dlg = new InputDialog(
                 HandlerUtil.getActiveShellChecked(event), name,
-                "Enter parameter, example: " + example, "", null);
+                "Enter parameter, example: " + example, defaultValue, null);
         String input = "";
         if (dlg.open() == Window.OK) {
             // User clicked OK
@@ -187,7 +198,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return input;
     }
     
-    private void processChangeVersionScript(String tempFolder) throws IOException {
+    private String processChangeVersionScript(String tempFolder) throws IOException {
         String changVersionName = CHANGEVERSION_BAT.replace("./", "");
         String projectPath = project.getLocation().toFile().getPath();
         String rootProjectPath = getParentProject(projectPath, CHANGEVERSION_BAT);
@@ -198,9 +209,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
         File file = new File(tempFolder+"/"+changVersionName);
         FileUtils.writeStringToFile(file, mergeScript);
+        return rootProjectPath;
     }
     
-    private void processRleaseScript(String tempFolder) throws IOException {
+    private String processRleaseScript(String tempFolder) throws IOException {
         String releaseName = RELEASE_BAT.replace("./", "");
         String projectPath = project.getLocation().toFile().getPath();
         String rootProjectPath = getParentProject(projectPath, MERGE_BAT);
@@ -211,9 +223,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
         File file = new File(tempFolder+"/"+releaseName);
         FileUtils.writeStringToFile(file, mergeScript);
+        return rootProjectPath;
     }
     
-    private void processMergeScript(String tempFolder) throws IOException {
+    private String processMergeScript(String tempFolder) throws IOException {
         String mergeName = MERGE_BAT.replace("./", "");
         String projectPath = project.getLocation().toFile().getPath();
         String rootProjectPath = getParentProject(projectPath, MERGE_BAT);
@@ -224,15 +237,34 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
         File file = new File(tempFolder+"/"+mergeName);
         FileUtils.writeStringToFile(file, mergeScript);
+        return rootProjectPath;
+    }
+    
+    private String getPomVersion(String rootProjectPath) throws IOException {
+        String pomFile = rootProjectPath+"/pom.xml";
+        List<String> value = FileUtils.readLines(new File(pomFile));
+        String version = "";
+        for(String v : value) {
+            if(v.indexOf("<version>")!=-1) {
+                version = StringUtils.substringBetween(v, "<version>", "</version>");
+                break;
+            }
+        }
+        return version;
     }
 
     private void merge(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-
-        String version = input(event, name, "branchFromVersion branchToVersion");
+        String tempFolder = System.getenv("TEMP");
+        String rootProjectPath = processMergeScript(tempFolder);
+        String pomVersion = getPomVersion(rootProjectPath);
+        String defaultValue = pomVersion+" master";
+        if(defaultValue.indexOf("-SNAPSHOT") == -1) {
+            defaultValue = pomVersion+".release master";
+        }
+        
+        String version = input(event, name, defaultValue, "branchFromVersion branchToVersion");
         if(StringUtils.isNotBlank(version)) {
-            String tempFolder = System.getenv("TEMP");
-            processMergeScript(tempFolder);
             
             cmdBuilders.add(new CmdBuilder(tempFolder, MERGE_BAT, version));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
@@ -246,13 +278,18 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     private void changeVersion(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-        String params = input(event, name, "newVersion");
+
+        String tempFolder = System.getenv("TEMP");
+        String rootProjectPath = processChangeVersionScript(tempFolder);
+        String pomVersion = getPomVersion(rootProjectPath);
+        String bPomVersion = StringUtils.substringBeforeLast(pomVersion, ".");
+        String aPomVersion = StringUtils.substringAfterLast(pomVersion, ".").replace("-SNAPSHOT", "");
+        aPomVersion = String.valueOf(Integer.parseInt(aPomVersion)+1);
+        String defaultValue = bPomVersion+"."+aPomVersion+"-SNAPSHOT";
+        String params = input(event, name, defaultValue, "newVersion");
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
-            
-            String tempFolder = System.getenv("TEMP");
-            processChangeVersionScript(tempFolder);
             
             cmdBuilders.add(new CmdBuilder(tempFolder, CHANGEVERSION_BAT, params));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
@@ -266,13 +303,20 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     private void release(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-        String params = input(event, name, "BranchVersion test|release");
+        
+        String tempFolder = System.getenv("TEMP");
+        String rootProjectPath = processRleaseScript(tempFolder);
+        
+        String defaultValue = getPomVersion(rootProjectPath);
+        if(defaultValue.indexOf("-SNAPSHOT") != -1) {
+            defaultValue = defaultValue.replace("-SNAPSHOT", ".release")+" test";
+        } else {
+            defaultValue = defaultValue+".release test";
+        }
+        String params = input(event, name, defaultValue, "BranchVersion test|release");
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
-            
-            String tempFolder = System.getenv("TEMP");
-            processRleaseScript(tempFolder);
             
             cmdBuilders.add(new CmdBuilder(tempFolder, RELEASE_BAT, params));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
