@@ -3,12 +3,10 @@ package com.aeasycredit.deployplugin.handlers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -24,13 +22,11 @@ import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
-import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.aeasycredit.deployplugin.CmdBuilder;
@@ -40,6 +36,9 @@ import com.aeasycredit.deployplugin.jobs.ClientJob;
 import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.google.common.collect.Lists;
+
+import edu.nyu.cs.javagit.api.DotGit;
+import edu.nyu.cs.javagit.api.Ref;
 
 /**
  * 功能描述
@@ -167,7 +166,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if (!new File(projectPath + "\\" + cmd).exists()) {
             String parent = new File(projectPath).getParent();
             if(StringUtils.isBlank(parent)) {
-                throw new FileNotFoundException(cmd + " not found.");
+                throw new FileNotFoundException(cmd.replace("./", "") + " not found.");
             }
             return getParentProject(parent, cmd);
         }
@@ -240,6 +239,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return rootProjectPath;
     }
     
+    @SuppressWarnings("unchecked")
     private String getPomVersion(String rootProjectPath) throws IOException {
         String pomFile = rootProjectPath+"/pom.xml";
         List<String> value = FileUtils.readLines(new File(pomFile));
@@ -257,10 +257,24 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
         String tempFolder = System.getenv("TEMP");
         String rootProjectPath = processMergeScript(tempFolder);
+        
         String pomVersion = getPomVersion(rootProjectPath);
         String defaultValue = pomVersion+" master";
-        if(defaultValue.indexOf("-SNAPSHOT") == -1) {
-            defaultValue = pomVersion+".release master";
+        
+        // Get release version
+        String releaseVersion = pomVersion.replace("-SNAPSHOT", "")+".release";
+        // Check releaseVersion is exist
+        File repositoryDirectory = new File(rootProjectPath);
+        // Get the instance of the DotGit Object
+        DotGit dotGit = DotGit.getInstance(repositoryDirectory);
+        Iterator<Ref> refs = dotGit.getBranches();
+        while(refs.hasNext()) {
+            Ref ref = refs.next();
+//            System.out.println("ref--->"+ref.getName()+"/"+ref.getRepositoryName());
+            if(releaseVersion.equals(ref.getName())) {
+                defaultValue = releaseVersion+" master";
+                break;
+            }
         }
         
         String version = input(event, name, defaultValue, "branchFromVersion branchToVersion");
@@ -307,12 +321,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String tempFolder = System.getenv("TEMP");
         String rootProjectPath = processRleaseScript(tempFolder);
         
-        String defaultValue = getPomVersion(rootProjectPath);
-        if(defaultValue.indexOf("-SNAPSHOT") != -1) {
-            defaultValue = defaultValue.replace("-SNAPSHOT", ".release")+" test";
-        } else {
-            defaultValue = defaultValue+".release test";
-        }
+        String pomVersion = getPomVersion(rootProjectPath);
+        String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release test";
+        
         String params = input(event, name, defaultValue, "BranchVersion test|release");
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
