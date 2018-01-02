@@ -30,8 +30,8 @@ import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.aeasycredit.deployplugin.CmdBuilder;
-import com.aeasycredit.deployplugin.DeployPluginException;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
+import com.aeasycredit.deployplugin.exception.DeployPluginException;
 import com.aeasycredit.deployplugin.jobs.ClientJob;
 import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;

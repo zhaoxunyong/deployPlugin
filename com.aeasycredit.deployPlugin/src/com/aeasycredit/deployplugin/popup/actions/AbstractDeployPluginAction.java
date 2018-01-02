@@ -6,15 +6,18 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
+
+import com.aeasycredit.deployplugin.exception.Exceptionhelper;
 
 /**
  * 功能描述
@@ -56,10 +59,13 @@ public abstract class AbstractDeployPluginAction implements IObjectActionDelegat
         try {
             handlerService.executeCommand(commandId, null);
         } catch (Exception e) {
-            MessageDialog.openError(shell, "DeployPlugin", e.getMessage());
+//            MessageDialog.openError(shell, "DeployPlugin", e.getMessage());
+            MultiStatus status = Exceptionhelper.createMultiStatus(e.getLocalizedMessage(), e);
+            // show error dialog
+            ErrorDialog.openError(shell, "DeployPlugin", e.getMessage(), status);
         }
     }
-
+    
     /**
      * @see IActionDelegate#selectionChanged(IAction, ISelection)
      */

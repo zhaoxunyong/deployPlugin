@@ -2,9 +2,12 @@ package com.aeasycredit.deployplugin.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
+
+import com.aeasycredit.deployplugin.exception.Exceptionhelper;
 
 /** 
  * 功能描述
@@ -36,7 +39,10 @@ public class ChangeVersionHandler extends AbstractDeployPluginHandler {
             this.setProject(project());
 			changeVersion(event);
 		} catch (Exception e) {
-			MessageDialog.openError(shell, "change version error", e.getMessage());
+//			MessageDialog.openError(shell, "change version error", e.getMessage());
+		    MultiStatus status = Exceptionhelper.createMultiStatus(e.getLocalizedMessage(), e);
+            // show error dialog
+            ErrorDialog.openError(shell, "change version error", e.getMessage(), status);
 		}
         return null;
     }

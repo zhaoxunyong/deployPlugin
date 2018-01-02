@@ -1,10 +1,10 @@
-package com.aeasycredit.deployplugin;
+package com.aeasycredit.deployplugin.exception;
 
 /** 
- * 功能描述
+ * DeployPluginException
  * 
  * <p>
- * <a href="SlicePluginException.java"><i>View Source</i></a>
+ * <a href="DeployPluginException.java"><i>View Source</i></a>
  * </p>
  * @author zhaoxunyong
  * @version 3.0

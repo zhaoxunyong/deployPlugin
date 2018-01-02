@@ -2,12 +2,15 @@ package com.aeasycredit.deployplugin.handlers;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import com.aeasycredit.deployplugin.exception.Exceptionhelper;
+
 /** 
- * 功能描述
+ * ReleaseHandler
  * 
  * <p>
  * <a href="DeployAllHandler.java"><i>View Source</i></a>
@@ -36,7 +39,10 @@ public class ReleaseHandler extends AbstractDeployPluginHandler {
             this.setProject(project());
             release(event);
 		} catch (Exception e) {
-			MessageDialog.openError(shell, "release error", e.getMessage());
+//			MessageDialog.openError(shell, "release error", e.getMessage());
+			MultiStatus status = Exceptionhelper.createMultiStatus(e.getLocalizedMessage(), e);
+            // show error dialog
+            ErrorDialog.openError(shell, "release error", e.getMessage(), status);
 		}
         return null;
     }

@@ -1,9 +1,9 @@
 package com.aeasycredit.deployplugin.jobs;
 
-import com.aeasycredit.deployplugin.DeployPluginException;
+import com.aeasycredit.deployplugin.exception.DeployPluginException;
 
 /**
- * 功能描述
+ * Refreshable
  * 
  * <p>
  * <a href="Refreshable.java"><i>View Source</i></a>
