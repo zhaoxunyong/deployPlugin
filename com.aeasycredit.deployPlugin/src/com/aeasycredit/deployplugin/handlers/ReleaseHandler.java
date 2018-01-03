@@ -13,7 +13,7 @@ import com.aeasycredit.deployplugin.exception.Exceptionhelper;
  * ReleaseHandler
  * 
  * <p>
- * <a href="DeployAllHandler.java"><i>View Source</i></a>
+ * <a href="ReleaseHandler.java"><i>View Source</i></a>
  * </p>
  * @author zhaoxunyong
  * @version 3.0

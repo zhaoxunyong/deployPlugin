@@ -1,9 +1,3 @@
-/*
- * 描述： <描述>
- * 修改人： Dave.zhao
- * 修改时间： 2018年1月2日
- * 项目： com.aeasycredit.deployPlugin
- */
 package com.aeasycredit.deployplugin.exception;
 
 import java.util.ArrayList;
@@ -16,10 +10,12 @@ import org.eclipse.core.runtime.Status;
 /**
  * Exceptionhelper
  * 
- * @author Dave.zhao
- * @version [版本号, 2018年1月2日]
- * @see [相关类/方法]
- * @since [产品/模块版本]
+ * <p>
+ * <a href="Exceptionhelper.java"><i>View Source</i></a>
+ * </p>
+ * @author zhaoxunyong
+ * @version 3.0
+ * @since 1.0 
  */
 public class Exceptionhelper {
     

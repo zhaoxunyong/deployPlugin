@@ -8,7 +8,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 /**
- * 功能描述
+ * CompletionAction
  * 
  * <p>
  * <a href="CompletionAction.java"><i>View Source</i></a>

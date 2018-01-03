@@ -4,7 +4,7 @@ import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
- * 功能描述
+ * CmdBuilder
  * 
  * <p>
  * <a href="CmdParam.java"><i>View Source</i></a>

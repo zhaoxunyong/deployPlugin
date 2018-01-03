@@ -10,10 +10,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.aeasycredit.deployplugin.exception.Exceptionhelper;
 
 /** 
- * 功能描述
+ * MergeHandler
  * 
  * <p>
- * <a href="DeployAllHandler.java"><i>View Source</i></a>
+ * <a href="MergeHandler.java"><i>View Source</i></a>
  * </p>
  * @author zhaoxunyong
  * @version 3.0

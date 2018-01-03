@@ -18,7 +18,7 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 /**
- * 功能描述
+ * DeployPluginHelper
  * 
  * <p>
  * <a href="PluginUtils.java"><i>View Source</i></a>
@@ -118,10 +118,6 @@ public class DeployPluginHelper {
     
     
     public static void main(String[] args) throws IOException, InterruptedException {
-//        List<String> commands=new ArrayList();  
-//        test("d:/eml/", "mkdir xxx", null);
-//        test("D:\\Developer\\runtime-EclipseApplication\\test\\tools", "ice_php_all.bat", null);
-        
         String line = "cmd.exe /C deploy.bat";
         
         CommandLine cmdLine = CommandLine.parse(line);
@@ -137,7 +133,7 @@ public class DeployPluginHelper {
         
         DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
         
-        executor.setWorkingDirectory(new File("D:\\Developer\\workspace\\new\\datacenter\\datacenter\\datacenter-dataanalysis"));
+        executor.setWorkingDirectory(new File("D:\\works"));
         executor.execute(cmdLine, resultHandler);
         System.out.println("exitValue===");
         resultHandler.waitFor();

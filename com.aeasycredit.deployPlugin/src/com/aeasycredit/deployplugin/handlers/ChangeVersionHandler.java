@@ -10,10 +10,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.aeasycredit.deployplugin.exception.Exceptionhelper;
 
 /** 
- * 功能描述
+ * ChangeVersionHandler
  * 
  * <p>
- * <a href="DeployHandler.java"><i>View Source</i></a>
+ * <a href="ChangeVersionHandler.java"><i>View Source</i></a>
  * </p>
  * @author zhaoxunyong
  * @version 3.0

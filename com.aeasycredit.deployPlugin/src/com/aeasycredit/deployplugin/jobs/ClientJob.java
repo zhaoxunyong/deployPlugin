@@ -15,7 +15,7 @@ import com.aeasycredit.deployplugin.CmdBuilder;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
 
 /**
- * 功能描述 http://blog.eitchnet.ch/archives/46
+ *  http://blog.eitchnet.ch/archives/46
  * 
  * <p>
  * <a href="ClientJob.java"><i>View Source</i></a>

@@ -20,7 +20,7 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import com.aeasycredit.deployplugin.exception.Exceptionhelper;
 
 /**
- * 功能描述
+ * AbstractDeployPluginAction
  * 
  * <p>
  * <a href="AbstractSlicePluginAction.java"><i>View Source</i></a>

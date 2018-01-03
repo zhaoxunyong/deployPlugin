@@ -41,10 +41,10 @@ import edu.nyu.cs.javagit.api.DotGit;
 import edu.nyu.cs.javagit.api.Ref;
 
 /**
- * 功能描述
+ * AbstractDeployPluginHandler
  * 
  * <p>
- * <a href="AbstractHandler.java"><i>View Source</i></a>
+ * <a href="AbstractDeployPluginHandler.java"><i>View Source</i></a>
  * </p>
  * 
  * @author zhaoxunyong
