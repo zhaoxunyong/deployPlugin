@@ -2,7 +2,7 @@
 <feature
       id="com.aeasycredit.deployPlugin.feature"
       label="com.aeasycredit.deployplugin"
-      version="1.0.8"
+      version="1.0.9"
       provider-name="AEASYCREDIT"
       plugin="com.aeasycredit.DeployPlugin">
 
@@ -26,7 +26,7 @@
          id="com.aeasycredit.DeployPlugin"
          download-size="0"
          install-size="0"
-         version="1.0.8"
+         version="1.0.9"
          unpack="false"/>
 
 </feature>

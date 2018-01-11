@@ -61,6 +61,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected final static String CHANGEVERSION_BAT = "./changeVersion.sh";
     protected final static String RELEASE_BAT = "./release.sh";
     protected final static String MERGE_BAT = "./merge.sh";
+    protected final static String MYBATISGEN_BAT = "./mybatisGen.sh";
 
     /**
      * 
@@ -156,6 +157,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     protected void merge(ExecutionEvent event) throws Exception {
         merge(event, "Merge");
+    }
+
+    protected void mybatisGen(ExecutionEvent event) throws Exception {
+        mybatisGen(event, "Mybatis Gen");
     }
 
     private String getParentProject(String projectPath, String cmd) throws IOException {
@@ -312,6 +317,22 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //                MessageDialog.openError(shell, name, "No project or pakcage selected.");
                 throw new Exception("No project or package selected.");
             }
+        }
+    }
+
+    private void mybatisGen(ExecutionEvent event, String name) throws Exception {
+        List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
+        
+        String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = getParentProject(projectPath, MYBATISGEN_BAT);
+        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+        
+        cmdBuilders.add(new CmdBuilder(rootProjectPath, MYBATISGEN_BAT, ""));
+        if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+            runJob(name, cmdBuilders);
+        } else {
+//            MessageDialog.openError(shell, name, "No project or pakcage selected.");
+            throw new Exception("No project or package selected.");
         }
     }
 

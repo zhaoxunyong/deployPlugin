@@ -39,6 +39,14 @@
                label="Merge"
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.JavaElementsGroup">
          </action>
+         <action
+               class="com.aeasycredit.deployplugin.popup.actions.MybatisGenAction:com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.mybatisGenAction"
+               label="Mybatis Gen"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.JavaElementsGroup">
+         </action>
       </objectContribution>
       <objectContribution
             id="com.aeasycredit.DeployPlugin.Project"
@@ -75,6 +83,14 @@
                label="Merge"
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
          </action>
+         <action
+               class="com.aeasycredit.deployplugin.popup.actions.MybatisGenAction:com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.mybatisGenAction"
+               label="Mybatis Gen"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
+         </action>
       </objectContribution>
    </extension>
    <extension
@@ -98,6 +114,11 @@
             id="com.aeasycredit.DeployPlugin.commands.mergeCommand"
             name="Merge Command">
       </command>
+      <command
+            categoryId="com.aeasycredit.DeployPlugin.commands.category"
+            id="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+            name="Mybatis Gen Command">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -112,6 +133,10 @@
       <handler
             class="com.aeasycredit.deployplugin.handlers.MergeHandler"
             commandId="com.aeasycredit.DeployPlugin.commands.mergeCommand">
+      </handler>
+      <handler
+            class="com.aeasycredit.deployplugin.handlers.MybatisGenHandler"
+            commandId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand">
       </handler>
    </extension>
    <extension
@@ -133,6 +158,12 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Ctrl+Shift+K">
+      </key>
+      <key
+            commandId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+Shift+P">
       </key>
    </extension>
    <extension
@@ -162,6 +193,13 @@
                   id="com.aeasycredit.DeployPlugin.toolbars.mergeCommand"
                   label="Merge"
                   tooltip="Merge">
+            </command>
+            <command
+                  commandId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
+                  icon="icons/mybatisgen.gif"
+                  id="com.aeasycredit.DeployPlugin.toolbars.mybatisGenCommand"
+                  label="Mybatis Gen"
+                  tooltip="Mybatis Gen">
             </command>
          </toolbar>
       </menuContribution>
