@@ -20,6 +20,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jface.dialogs.InputDialog;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
@@ -329,7 +330,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         
         cmdBuilders.add(new CmdBuilder(rootProjectPath, MYBATISGEN_BAT, ""));
         if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-            runJob(name, cmdBuilders);
+            boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
+            if(isConfirm) {
+                runJob(name, cmdBuilders);
+            }
         } else {
 //            MessageDialog.openError(shell, name, "No project or pakcage selected.");
             throw new Exception("No project or package selected.");
