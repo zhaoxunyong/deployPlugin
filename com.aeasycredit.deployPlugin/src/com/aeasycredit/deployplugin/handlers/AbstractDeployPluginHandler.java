@@ -347,7 +347,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String rootProjectPath = processRleaseScript(tempFolder);
         
         String pomVersion = getPomVersion(rootProjectPath);
-        String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release test";
+        String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release";
         
         String params = input(event, name, defaultValue, "BranchVersion test|release");
         if(StringUtils.isNotBlank(params)) {
