@@ -220,7 +220,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     private String processRleaseScript(String tempFolder) throws IOException {
         String releaseName = RELEASE_BAT.replace("./", "");
         String projectPath = project.getLocation().toFile().getPath();
-        String rootProjectPath = getParentProject(projectPath, MERGE_BAT);
+        String rootProjectPath = getParentProject(projectPath, RELEASE_BAT);
         rootProjectPath = rootProjectPath.replace("\\", "\\\\");
 //        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
 //        String str = IOUtils.toString(input);
