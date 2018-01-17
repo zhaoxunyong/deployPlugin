@@ -182,7 +182,7 @@
             </command>
             <command
                   commandId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
-                  icon="icons/deployAll.gif"
+                  icon="icons/windows.gif"
                   id="com.aeasycredit.DeployPlugin.toolbars.releaseCommand"
                   label="Release"
                   tooltip="Release">
