@@ -24,6 +24,14 @@
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.JavaElementsGroup">
          </action>
          <action
+               class="com.aeasycredit.deployplugin.popup.actions.NewBranchAction:com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.newBranchAction"
+               label="New Branch"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.JavaElementsGroup">
+         </action>
+         <action
                class="com.aeasycredit.deployplugin.popup.actions.ReleaseAction:com.aeasycredit.DeployPlugin.commands.releaseCommand"
                definitionId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
                enablesFor="1"
@@ -68,6 +76,14 @@
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
          </action>
          <action
+               class="com.aeasycredit.deployplugin.popup.actions.NewBranchAction:com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.newBranchAction"
+               label="New Branch"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
+         </action>
+         <action
                class="com.aeasycredit.deployplugin.popup.actions.ReleaseAction:com.aeasycredit.DeployPlugin.commands.releaseCommand"
                definitionId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
                enablesFor="1"
@@ -101,6 +117,11 @@
       </category>
       <command
             categoryId="com.aeasycredit.DeployPlugin.commands.category"
+            id="com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+            name="New Branch Command">
+      </command>
+      <command
+            categoryId="com.aeasycredit.DeployPlugin.commands.category"
             id="com.aeasycredit.DeployPlugin.commands.changeVersionCommand"
             name="Change Version Command">
       </command>
@@ -127,6 +148,10 @@
             commandId="com.aeasycredit.DeployPlugin.commands.changeVersionCommand">
       </handler>
       <handler
+            class="com.aeasycredit.deployplugin.handlers.NewBranchHandler"
+            commandId="com.aeasycredit.DeployPlugin.commands.newBranchCommand">
+      </handler>
+      <handler
             class="com.aeasycredit.deployplugin.handlers.ReleaseHandler"
             commandId="com.aeasycredit.DeployPlugin.commands.releaseCommand">
       </handler>
@@ -146,6 +171,12 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Ctrl+Shift+D">
+      </key>
+      <key
+            commandId="com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+Shift+M">
       </key>
       <key
             commandId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
@@ -179,6 +210,13 @@
                   id="com.aeasycredit.DeployPlugin.toolbars.changeVersionCommand"
                   label="Change Version"
                   tooltip="Change Version">
+            </command>
+            <command
+                  commandId="com.aeasycredit.DeployPlugin.commands.newBranchCommand"
+                  icon="icons/newBranch.gif"
+                  id="com.aeasycredit.DeployPlugin.toolbars.newBranchCommand"
+                  label="New Branch"
+                  tooltip="New Branch">
             </command>
             <command
                   commandId="com.aeasycredit.DeployPlugin.commands.releaseCommand"
