@@ -9,6 +9,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.console.ConsolePlugin;
@@ -86,7 +87,12 @@ public class DeployPluginHelper {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
-        String shell = "\""+System.getenv("GIT_HOME")+"\\bin\\bash.exe\" --login -i -c \"bash "+command+" "+params+"\"";
+        String shell = "";
+        if(SystemUtils.IS_OS_WINDOWS) {
+            shell = "\""+System.getenv("GIT_HOME")+"\\bin\\bash.exe\" --login -i -c \"bash "+command+" "+params+"\"";
+        } else {
+            shell = "bash "+command+" "+params;
+        }
         CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(workHome));

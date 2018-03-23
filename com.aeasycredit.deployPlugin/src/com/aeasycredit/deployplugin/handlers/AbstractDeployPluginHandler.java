@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.internal.resources.Project;
@@ -171,7 +172,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     private String getParentCmdFile(String projectPath, String cmd) throws IOException {
-        if (!new File(projectPath + "\\" + cmd).exists()) {
+        if (!new File(projectPath + File.separator + cmd).exists()) {
             /*if(projectPath.indexOf(project.getName()) == -1) {
                 // 不在当前项目中
                 throw new FileNotFoundException(cmd.replace("./", "") + " not found.");
@@ -182,13 +183,27 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
             }
             return getParentCmdFile(parent, cmd);
         }
-        return projectPath+"\\"+cmd.replace("./", "");
+        return projectPath+File.separator+cmd.replace("./", "");
+    }
+    
+    private String getTempFolder() {
+        if(SystemUtils.IS_OS_WINDOWS) {
+            return System.getenv("TEMP");   
+        } else {
+            String tempFolder ="~/.eclipsePluginTemp";
+            if(!new File(tempFolder).exists()) {
+                new File(tempFolder).mkdirs();
+            }
+            return tempFolder;
+        }
     }
 
     private String getCmdFile(String projectPath, String cmd) throws IOException {
-        String gitHome = System.getenv("GIT_HOME");
-        if(StringUtils.isBlank(gitHome)) {
-            throw new FileNotFoundException("GIT_HOME env must be not empty.");
+        if(SystemUtils.IS_OS_WINDOWS) {
+            String gitHome = System.getenv("GIT_HOME");
+            if(StringUtils.isBlank(gitHome)) {
+                throw new FileNotFoundException("GIT_HOME env must be not empty.");
+            }
         }
         String allCmd = cmd.replace(".sh", "All.sh");
         String cmdFile = "";
@@ -229,60 +244,17 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdFile = getCmdFile(projectPath, scriptName);
         String rootProjectPath = new File(cmdFile).getParent();
         String changVersionName = FilenameUtils.getName(cmdFile);
-        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+        if(SystemUtils.IS_OS_WINDOWS) {
+            rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+        }
 //        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
 //        String str = IOUtils.toString(input);
-        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+changVersionName), "UTF-8");
+        String str = FileUtils.readFileToString(new File(rootProjectPath+File.separator+changVersionName), "UTF-8");
         String script = str.replace("#cd #{project}", "cd "+rootProjectPath);
-        File file = new File(tempFolder+"/"+changVersionName);
+        File file = new File(tempFolder+File.separator+changVersionName);
         FileUtils.writeStringToFile(file, script);
         return cmdFile;
     }
-    
-    /*private String processNewBranchScript(String tempFolder) throws IOException {
-        String projectPath = project.getLocation().toFile().getPath();
-        String cmdFile = getCmdFile(projectPath, NEWBRANCH_BAT);
-        String rootProjectPath = new File(cmdFile).getParent();
-        String changVersionName = FilenameUtils.getName(cmdFile);
-        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
-//        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
-//        String str = IOUtils.toString(input);
-        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+changVersionName), "UTF-8");
-        String script = str.replace("#cd #{project}", "cd "+rootProjectPath);
-        File file = new File(tempFolder+"/"+changVersionName);
-        FileUtils.writeStringToFile(file, script);
-        return cmdFile;
-    }
-    
-    private String processRleaseScript(String tempFolder) throws IOException {
-        String projectPath = project.getLocation().toFile().getPath();
-        String cmdFile = getCmdFile(projectPath, RELEASE_BAT);
-        String rootProjectPath = new File(cmdFile).getParent();
-        String releaseName = FilenameUtils.getName(cmdFile);
-        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
-//        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
-//        String str = IOUtils.toString(input);
-        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+releaseName), "UTF-8");
-        String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
-        File file = new File(tempFolder+"/"+releaseName);
-        FileUtils.writeStringToFile(file, mergeScript);
-        return cmdFile;
-    }
-    
-    private String processMergeScript(String tempFolder) throws IOException {
-        String projectPath = project.getLocation().toFile().getPath();
-        String cmdFile = getCmdFile(projectPath, MERGE_BAT);
-        String rootProjectPath = new File(cmdFile).getParent();
-        String mergeName = FilenameUtils.getName(cmdFile);
-        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
-//        InputStream input = this.getClass().getResourceAsStream("/merge.sh");
-//        String str = IOUtils.toString(input);
-        String str = FileUtils.readFileToString(new File(rootProjectPath+"/"+mergeName), "UTF-8");
-        String mergeScript = str.replace("#cd #{project}", "cd "+rootProjectPath);
-        File file = new File(tempFolder+"/"+mergeName);
-        FileUtils.writeStringToFile(file, mergeScript);
-        return cmdFile;
-    }*/
     
     @SuppressWarnings("unchecked")
     private String getPomVersion(String rootProjectPath) throws IOException {
@@ -300,7 +272,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     private void merge(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-        String tempFolder = System.getenv("TEMP");
+        String tempFolder = getTempFolder();
         String cmdFile = processScript(MERGE_BAT, tempFolder);
         String rootProjectPath = new File(cmdFile).getParent();
         String cmdName = FilenameUtils.getName(cmdFile);
@@ -340,7 +312,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     private void changeVersion(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
 
-        String tempFolder = System.getenv("TEMP");
+        String tempFolder = getTempFolder();
         String cmdFile = processScript(CHANGEVERSION_BAT, tempFolder);
         String rootProjectPath = new File(cmdFile).getParent();
         String cmdName = FilenameUtils.getName(cmdFile);
@@ -367,7 +339,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     private void newBranch(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
 
-        String tempFolder = System.getenv("TEMP");
+        String tempFolder = getTempFolder();
         String cmdFile = processScript(NEWBRANCH_BAT, tempFolder);
         String rootProjectPath = new File(cmdFile).getParent();
         String cmdName = FilenameUtils.getName(cmdFile);
@@ -401,8 +373,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdFile = getCmdFile(projectPath, MYBATISGEN_BAT);
         String rootProjectPath = new File(cmdFile).getParent();
         String cmdName = FilenameUtils.getName(cmdFile);
-        
-        rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+        if(SystemUtils.IS_OS_WINDOWS) {
+            rootProjectPath = rootProjectPath.replace("\\", "\\\\");
+        }
         
         cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdName, ""));
         if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
@@ -419,7 +392,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     private void release(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
         
-        String tempFolder = System.getenv("TEMP");
+        String tempFolder = getTempFolder();
         String cmdFile = processScript(RELEASE_BAT, tempFolder);
         String cmdName = FilenameUtils.getName(cmdFile);
         String rootProjectPath = new File(cmdFile).getParent();
