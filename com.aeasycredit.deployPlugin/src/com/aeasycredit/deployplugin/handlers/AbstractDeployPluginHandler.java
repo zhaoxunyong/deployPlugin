@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.internal.resources.Project;
@@ -186,9 +187,11 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     private String getCmdFile(String projectPath, String cmd) throws IOException {
-        String gitHome = System.getenv("GIT_HOME");
-        if(StringUtils.isBlank(gitHome)) {
-            throw new FileNotFoundException("GIT_HOME env must be not empty.");
+        if(SystemUtils.IS_OS_WINDOWS) {
+            String gitHome = System.getenv("GIT_HOME");
+            if(StringUtils.isBlank(gitHome)) {
+                throw new FileNotFoundException("GIT_HOME env must be not empty.");
+            }
         }
         String allCmd = cmd.replace(".sh", "All.sh");
         String cmdFile = "";
