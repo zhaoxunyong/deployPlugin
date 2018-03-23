@@ -190,7 +190,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if(SystemUtils.IS_OS_WINDOWS) {
             return System.getenv("TEMP");   
         } else {
-            String tempFolder ="~/.eclipsePluginTemp";
+            String tempFolder ="~/.eclipse";
             if(!new File(tempFolder).exists()) {
                 new File(tempFolder).mkdirs();
             }
