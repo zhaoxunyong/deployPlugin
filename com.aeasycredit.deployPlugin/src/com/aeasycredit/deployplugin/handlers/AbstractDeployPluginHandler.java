@@ -398,9 +398,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String rootProjectPath = new File(cmdFile).getParent();
         
         String pomVersion = getPomVersion(rootProjectPath);
-        String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release release";
+        String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release";
         
-        String params = input(event, name, defaultValue, "BranchVersion release|hotfix");
+        String params = input(event, name, defaultValue, "BranchVersion TagDate");
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
