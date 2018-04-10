@@ -226,13 +226,6 @@
                   tooltip="Release">
             </command>
             <command
-                  commandId="com.aeasycredit.DeployPlugin.commands.mergeCommand"
-                  icon="icons/linux.gif"
-                  id="com.aeasycredit.DeployPlugin.toolbars.mergeCommand"
-                  label="Merge"
-                  tooltip="Merge">
-            </command>
-            <command
                   commandId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
                   icon="icons/mybatisgen.gif"
                   id="com.aeasycredit.DeployPlugin.toolbars.mybatisGenCommand"

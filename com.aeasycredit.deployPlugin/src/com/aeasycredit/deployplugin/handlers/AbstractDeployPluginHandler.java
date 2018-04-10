@@ -3,11 +3,14 @@ package com.aeasycredit.deployplugin.handlers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.commands.AbstractHandler;
@@ -269,6 +272,26 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
         return version;
     }
+    
+    private String checkHasSnapshotVersion(String rootProjectPath) throws IOException {
+        File dir = new File(rootProjectPath);  
+        Collection<File> files = FileUtils.listFiles(dir,  
+                FileFilterUtils.nameFileFilter("pom.xml"),    
+                DirectoryFileFilter.DIRECTORY);  
+         for (File f : files) {    
+             String pomFile = f.getPath();
+             List<String> value = FileUtils.readLines(new File(pomFile));
+             int i = 0;
+             for(String v : value) {
+                 if(v.indexOf("<version>")!=-1 && i == 0) {
+                     i++;
+                 } else if(v.indexOf("version")!=-1 && v.indexOf("-SNAPSHOT") != -1 && i > 0) {
+                     return pomFile;
+                 }
+             }    
+         }   
+         return "";
+    }
 
     private void merge(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
@@ -397,20 +420,28 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdName = FilenameUtils.getName(cmdFile);
         String rootProjectPath = new File(cmdFile).getParent();
         
-        String pomVersion = getPomVersion(rootProjectPath);
-        String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release";
+        boolean continute = true;
+        String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
+        if(StringUtils.isNotBlank(snapshotPath)) {
+            continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release. Do you want to continue?");
+        }
         
-        String params = input(event, name, defaultValue, "BranchVersion TagDate");
-        if(StringUtils.isNotBlank(params)) {
-//            String projectPath = project.getLocation().toFile().getPath();
-//            String rootProjectPath = getParentProject(projectPath, cmd);
+        if(continute) {
+            String pomVersion = getPomVersion(rootProjectPath);
+            String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release";
             
-            cmdBuilders.add(new CmdBuilder(tempFolder, cmdName, params));
-            if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-                runJob(name, cmdBuilders);
-            } else {
-//                MessageDialog.openError(shell, name, "No project or pakcage selected.");
-                throw new Exception("No project or package selected.");
+            String params = input(event, name, defaultValue, "BranchVersion TagDate");
+            if(StringUtils.isNotBlank(params)) {
+//                String projectPath = project.getLocation().toFile().getPath();
+//                String rootProjectPath = getParentProject(projectPath, cmd);
+                
+                cmdBuilders.add(new CmdBuilder(tempFolder, cmdName, params));
+                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+                    runJob(name, cmdBuilders);
+                } else {
+//                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+                    throw new Exception("No project or package selected.");
+                }
             }
         }
     }
