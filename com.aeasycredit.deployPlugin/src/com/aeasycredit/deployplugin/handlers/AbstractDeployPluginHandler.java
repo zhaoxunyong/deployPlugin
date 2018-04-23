@@ -273,6 +273,15 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return version;
     }
     
+    private String haSnapshotVersion(List<String> value, String var) {
+        for(String v : value) {
+            if(v.indexOf(var) !=-1 && v.indexOf("-SNAPSHOT") != -1) {
+                return v.trim();
+            }
+        }
+        return "";
+    }
+    
     private String checkHasSnapshotVersion(String rootProjectPath) throws IOException {
         File dir = new File(rootProjectPath);  
         Collection<File> files = FileUtils.listFiles(dir,  
@@ -281,12 +290,25 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
          for (File f : files) {    
              String pomFile = f.getPath();
              List<String> value = FileUtils.readLines(new File(pomFile));
-             int i = 0;
+             boolean isNew = false;
              for(String v : value) {
-                 if(v.indexOf("<version>")!=-1 && i == 0) {
-                     i++;
-                 } else if(v.indexOf("version")!=-1 && v.indexOf("-SNAPSHOT") != -1 && i > 0) {
-                     return pomFile;
+                 if(v.indexOf("<dependency>") !=-1) {
+                     isNew = true;
+                 } else if(v.indexOf("</dependency>") !=-1) {
+                     isNew = false;
+                 }
+                 
+                 if(isNew && v.indexOf("version")!=-1) {
+                     // && v.indexOf("-SNAPSHOT") != -1
+                     if(v.indexOf("${") != -1) {
+                         String var = StringUtils.substringBetween(v, "${", "}");
+                         String snapshotVar = haSnapshotVersion(value, var);
+                         if(StringUtils.isNotBlank(snapshotVar)) {
+                             return pomFile+"("+snapshotVar+")";
+                         }
+                     } else if(v.indexOf("-SNAPSHOT") != -1) {
+                         return pomFile+"("+v.trim()+")";
+                     }
                  }
              }    
          }   
