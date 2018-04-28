@@ -30,6 +30,9 @@ import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.window.Window;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -42,9 +45,6 @@ import com.aeasycredit.deployplugin.jobs.ClientJob;
 import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.google.common.collect.Lists;
-
-import edu.nyu.cs.javagit.api.DotGit;
-import edu.nyu.cs.javagit.api.Ref;
 
 /**
  * AbstractDeployPluginHandler
@@ -167,6 +167,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void merge(ExecutionEvent event) throws Exception {
+//        throw new UnsupportedOperationException("Not implemented yet.");
         merge(event, "Merge");
     }
 
@@ -323,11 +324,30 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdName = FilenameUtils.getName(cmdFile);
         
         String pomVersion = getPomVersion(rootProjectPath);
-        String defaultValue = pomVersion+" master";
+        String defaultValue = "";
         
         // Get release version
         String releaseVersion = pomVersion.replace("-SNAPSHOT", "")+".release";
+        
         // Check releaseVersion is exist
+        File repositoryDirectory = new File(rootProjectPath);
+        Git git = Git.open(repositoryDirectory);
+        List<Ref> refs = git.branchList().call();
+        for (Ref ref : refs) {
+//            System.out.println("ref--->" + ref.getName());
+            // ref.getName()--->refs/heads/1.7.x
+          if(("refs/heads/"+releaseVersion).equals(ref.getName())) {
+              defaultValue = releaseVersion+" master";
+              break;
+          }
+        }
+        
+        if(StringUtils.isBlank(defaultValue)) {
+//            throw new Exception(releaseVersion+" is not exist!");
+            defaultValue = pomVersion+" master";
+        }
+        
+        /*// Check releaseVersion is exist
         File repositoryDirectory = new File(rootProjectPath);
         // Get the instance of the DotGit Object
         DotGit dotGit = DotGit.getInstance(repositoryDirectory);
@@ -339,7 +359,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                 defaultValue = releaseVersion+" master";
                 break;
             }
-        }
+        }*/
         
         String version = input(event, name, defaultValue, "branchFromVersion branchToVersion");
         if(StringUtils.isNotBlank(version)) {
