@@ -32,7 +32,6 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -130,6 +129,19 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //          MessageDialog.openError(shell, name, e.getMessage());
 //      }
     }
+    
+    /*private void credentialHelper() throws Exception {
+        String projectPath = project.getLocation().toFile().getPath();
+//        String tempFile = getTempFolder();
+//        File file = new File(tempFile+File.separator+UUID.randomUUID().toString());
+//        FileUtils.writeStringToFile(file, data);
+        try {
+            DeployPluginHelper.exec(projectPath, "git ls-remote", "", true, true);
+        } catch(Exception e) {
+//            MessageDialog.openError(shell, "Credential Error", "Authentication error, please execute the following command through git bash:\n\ngit config --global credential.helper store\ngit ls-remote");
+            throw new Exception("Authentication error, please execute the following command through git bash:\n\ngit config --global credential.helper store\ngit ls-remote");
+        }
+    }*/
 
     /*
      * (non-Javadoc)
@@ -159,14 +171,17 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void newBranch(ExecutionEvent event) throws Exception {
+//        credentialHelper();
         newBranch(event, "New Branch");
     }
 
     protected void release(ExecutionEvent event) throws Exception {
+//        credentialHelper();
         release(event, "Release");
     }
 
     protected void merge(ExecutionEvent event) throws Exception {
+//        credentialHelper();
 //        throw new UnsupportedOperationException("Not implemented yet.");
         merge(event, "Merge");
     }
@@ -376,7 +391,6 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     private void changeVersion(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-
         String tempFolder = getTempFolder();
         String cmdFile = processScript(CHANGEVERSION_BAT, tempFolder);
         String rootProjectPath = new File(cmdFile).getParent();

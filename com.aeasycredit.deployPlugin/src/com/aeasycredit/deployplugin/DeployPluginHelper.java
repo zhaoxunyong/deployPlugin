@@ -80,18 +80,43 @@ public class DeployPluginHelper {
     
 
     public static boolean exec(String workHome, String command, String params, boolean asyc) throws InterruptedException, IOException {
-        return exec(null, workHome, command, params, asyc);
+        return exec(null, workHome, command, params, false, asyc);
+    }
+    
+
+    public static boolean exec(String workHome, String command, String params, boolean isBatchCommand, boolean asyc) throws InterruptedException, IOException {
+        return exec(null, workHome, command, params, isBatchCommand, asyc);
     }
 
-    public static boolean exec(final MessageConsoleStream console, String workHome, String command, String params, boolean asyc) throws IOException, InterruptedException {
+    /** 
+     * <功能简述><br>
+     * <功能详细描述>
+     *
+     * @param console
+     * @param workHome
+     * @param command
+     * @param params
+     * @param isBatchCommand 是通过文件执行，还是直接原始脚本执行,当isBatchCommand=true时表示直接传过来的是具体的命令，而不是sh文件。
+     * @param asyc
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     * 
+     * @return boolean [返回类型说明]
+     * @throws [异常类型] [异常说明]
+     * @see [类、类#方法、类#成员]
+     * @version [版本号, 2018年5月3日]
+     * @author Dave.zhao
+     */
+    public static boolean exec(final MessageConsoleStream console, String workHome, String command, String params, boolean isBatchCommand, boolean asyc) throws IOException, InterruptedException {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
         String shell = "";
         if(SystemUtils.IS_OS_WINDOWS) {
-            shell = "\""+System.getenv("GIT_HOME")+"\\bin\\bash.exe\" --login -i -c \"bash "+command+" "+params+"\"";
+            shell = "\""+System.getenv("GIT_HOME")+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash")+" "+command+" "+params+"\"";
         } else {
-            shell = "bash "+command+" "+params;
+            shell = ""+(isBatchCommand?"":"bash")+" "+command+" "+params;
         }
         CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
