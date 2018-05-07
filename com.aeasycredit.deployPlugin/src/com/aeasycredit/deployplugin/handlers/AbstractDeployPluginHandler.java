@@ -298,11 +298,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return "";
     }
     
+    @SuppressWarnings("unchecked")
     private String checkHasSnapshotVersion(String rootProjectPath) throws IOException {
         File dir = new File(rootProjectPath);  
-        Collection<File> files = FileUtils.listFiles(dir,  
-                FileFilterUtils.nameFileFilter("pom.xml"),    
-                DirectoryFileFilter.DIRECTORY);  
+        Collection<File> files = FileUtils.listFiles(dir, FileFilterUtils.nameFileFilter("pom.xml"), DirectoryFileFilter.DIRECTORY);  
          for (File f : files) {    
              String pomFile = f.getPath();
              List<String> value = FileUtils.readLines(new File(pomFile));
@@ -327,7 +326,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                      }
                  }
              }    
-         }   
+         }
          return "";
     }
 
@@ -479,7 +478,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         boolean continute = true;
         String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
         if(StringUtils.isNotBlank(snapshotPath)) {
-            continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release. Do you want to continue?");
+            continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release version. Do you want to continue?");
         }
         
         if(continute) {
