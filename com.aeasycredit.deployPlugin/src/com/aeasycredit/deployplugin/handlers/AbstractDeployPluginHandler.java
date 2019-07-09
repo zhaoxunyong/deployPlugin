@@ -3,7 +3,11 @@ package com.aeasycredit.deployplugin.handlers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,6 +32,7 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jgit.api.Git;
@@ -35,9 +40,11 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.aeasycredit.deployplugin.CmdBuilder;
+import com.aeasycredit.deployplugin.CmdExecutor;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
 import com.aeasycredit.deployplugin.exception.DeployPluginException;
 import com.aeasycredit.deployplugin.jobs.ClientJob;
@@ -238,12 +245,6 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
      * http://www.vogella.com/tutorials/EclipseDialogs/article.html
      */
     private String input(ExecutionEvent event, String name, String defaultValue, String example) throws Exception {
-        
-        /*ElementListSelectionDialog dlg =
-                new ElementListSelectionDialog(shell, new LabelProvider());
-            dlg.setElements(new String[] { "Linux", "Mac", "Windows" });
-            dlg.setTitle("Which operating system are you using");*/
-        
         InputDialog dlg = new InputDialog(
                 HandlerUtil.getActiveShellChecked(event), name,
                 "Enter parameter, example: " + example, defaultValue, null);
@@ -376,6 +377,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }*/
         
         String version = input(event, name, defaultValue, "branchFromVersion branchToVersion");
+        if( version.indexOf(" ") != -1) {
+            throw new Exception("The version is invalid.");
+        }
+        
         if(StringUtils.isNotBlank(version)) {
             
             cmdBuilders.add(new CmdBuilder(tempFolder, cmdName, version));
@@ -400,6 +405,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         aPomVersion = String.valueOf(Integer.parseInt(aPomVersion)+1);
         String defaultValue = bPomVersion+"."+aPomVersion+"-SNAPSHOT";
         String params = input(event, name, defaultValue, "newVersion");
+        if(params.indexOf(" ") != -1) {
+            throw new Exception("The version is invalid.");
+        }
+        
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
@@ -429,6 +438,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         a2PomVersion = String.valueOf(Integer.parseInt(a2PomVersion)+1);
         String defaultValue = a1PomVersion+"."+a2PomVersion+".x"; // 1.6.x
         String params = input(event, name, defaultValue, "newBranch");
+        if(params.indexOf(" ") != -1) {
+            throw new Exception("The version is invalid.");
+        }
+        
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
@@ -482,22 +495,91 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
         
         if(continute) {
-            String pomVersion = getPomVersion(rootProjectPath);
-            String defaultValue = pomVersion.replace("-SNAPSHOT", "")+".release";
-            
-            String params = input(event, name, defaultValue, "BranchVersion TagDate");
-            if(StringUtils.isNotBlank(params)) {
-//                String projectPath = project.getLocation().toFile().getPath();
-//                String rootProjectPath = getParentProject(projectPath, cmd);
-                
-                cmdBuilders.add(new CmdBuilder(tempFolder, cmdName, params));
-                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-                    runJob(name, cmdBuilders);
-                } else {
-//                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
-                    throw new Exception("No project or package selected.");
-                }
+        	SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmm");
+        	String dateString = formatter.format(new Date());
+        	   
+	        ElementListSelectionDialog releaseTypeDialog =
+	                new ElementListSelectionDialog(shell, new LabelProvider());
+	        releaseTypeDialog.setElements(new String[] {"release", "hotfix", "tag"});
+	        releaseTypeDialog.setTitle("Which release type do you want to pick?");
+            if (releaseTypeDialog.open() == Window.OK) {
+                String releaseType = (String) releaseTypeDialog.getFirstResult();
+//		        System.out.println("releaseType----->"+releaseType);
+		        if("release".equals(releaseType) || "hotfix".equals(releaseType)) {
+		        	// release or hotfix
+		            String pomVersion = getPomVersion(rootProjectPath);
+		            String defaultValue = pomVersion.replace("-SNAPSHOT", "")+"."+releaseType;
+		            
+		            String inputedVersion = input(event, name, defaultValue, "BranchVersion TagDate").trim();
+		            if( inputedVersion.indexOf(" ") != -1) {
+	                    throw new Exception("The version is invalid.");
+		            }
+		            
+		            if(StringUtils.isNotBlank(inputedVersion)) {
+//		                String projectPath = project.getLocation().toFile().getPath();
+//		                String rootProjectPath = getParentProject(projectPath, cmd);
+		                String parameters = inputedVersion +" "+ dateString + " "+releaseType;
+		                cmdBuilders.add(new CmdBuilder(tempFolder, cmdName, parameters));
+		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+		                    runJob(name, cmdBuilders);
+		                } else {
+//		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+		                    throw new Exception("No project or package selected.");
+		                }
+		            }
+		        } else {
+			        String command = "git";
+			        String param = "ls-remote";
+			        String result = CmdExecutor.exec(rootProjectPath, command, param, true);
+//			        System.out.println("result----->"+result);
+			        List<String> allReleases = Lists.newArrayList();
+			        if(!"".equals(result)) {
+			        	String[] results = result.split("[\n|\r\n]");
+			        	for(String r : results) {
+			        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
+			        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
+			                    allReleases.add(version);
+			        		}
+			        	}
+			        }
+//			        Collections.sort(allReleases, new Comparator<String>() {
+//			
+//						@Override
+//						public int compare(String o1, String o2) {
+//							String a1 = o1.replace("release", "").replace("hotfix", "").replace(".", "");
+//							String a2 = o2.replace("release", "").replace("hotfix", "").replace(".", "");
+//							return Integer.parseInt(a2) - Integer.parseInt(a1);
+//						}
+//			        	
+//			        });
+//			        System.out.println("allReleases1----->"+allReleases);
+//			        for(String x : allReleases.toArray(new String[allReleases.size()])) {
+//				        System.out.println("allReleases2----->"+x);
+//			        	
+//			        }
+			        
+			        
+			        ElementListSelectionDialog dlgs =
+			                new ElementListSelectionDialog(shell, new LabelProvider());
+		            dlgs.setElements(allReleases.toArray(new String[allReleases.size()]));
+		            dlgs.setTitle("Which operating system are you using");
+		            if (dlgs.open() == Window.OK) {
+		                String releaseVersion = (String) dlgs.getFirstResult();
+		                String parameters = releaseVersion +" "+ dateString + " "+releaseType;
+//				        System.out.println("releaseVersion----->"+releaseVersion);
+				        cmdBuilders.add(new CmdBuilder(tempFolder, cmdName, parameters));
+		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+		                    runJob(name, cmdBuilders);
+		                } else {
+//		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+		                    throw new Exception("No project or package selected.");
+		                }
+		            }
+		        	
+		        }
             }
+        	
+        	
         }
     }
 
