@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.aeasycredit.deployPlugin.feature_1.1.1.jar" id="com.aeasycredit.deployPlugin.feature" version="1.1.1">
+   <feature url="features/com.aeasycredit.deployPlugin.feature_1.1.2.jar" id="com.aeasycredit.deployPlugin.feature" version="1.1.2">
       <category name="com.aeasycredit.deployPlugin.updatesite"/>
    </feature>
    <category-def name="com.aeasycredit.deployPlugin.updatesite" label="aeasycredit deploy plugin"/>
