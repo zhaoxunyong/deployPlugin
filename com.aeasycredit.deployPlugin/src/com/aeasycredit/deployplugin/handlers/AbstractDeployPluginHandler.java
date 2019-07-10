@@ -56,8 +56,6 @@ import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.google.common.collect.Lists;
 
-import sun.net.www.http.HttpClient;
-
 /**
  * AbstractDeployPluginHandler
  * 
@@ -511,11 +509,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //			        	
 //			        }
 			        
-			        
 			        ElementListSelectionDialog dlgs =
 			                new ElementListSelectionDialog(shell, new LabelProvider());
 		            dlgs.setElements(allReleases.toArray(new String[allReleases.size()]));
-		            dlgs.setTitle("Which operating system are you using");
+		            dlgs.setTitle("Which release version do you want to pick?");
 		            if (dlgs.open() == Window.OK) {
 		                String releaseVersion = (String) dlgs.getFirstResult();
 		                String parameters = releaseVersion +" "+ dateString + " "+releaseType;
