@@ -13,7 +13,14 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 public final class FileHandlerUtils {
-    private final static String ROOT_URL = "http://gitlab.aeasycredit.net/dave.zhao/deployPlugin/raw/master";
+    private static String ROOT_URL;
+    
+    static {
+    	ROOT_URL = System.getenv("GIT_PLUGIN_URL");
+    	if(StringUtils.isBlank(ROOT_URL)) {
+    		ROOT_URL = "http://gitlab.aeasycredit.net/dave.zhao/deployPlugin/raw/master";
+    	}
+    }
 	
 	private FileHandlerUtils() {}
     
