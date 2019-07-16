@@ -33,11 +33,11 @@ public class JGitTest {
 //        }
         
 
-        Git git = Git.open(new File("/Developer/workspace/gittest"));
+        Git git = Git.open(new File("/Developer/workspace/config-server"));
         
-        git.pull()
-                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password))
-                .call();
+//        git.pull()
+//                .setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password))
+//                .call();
         
         Collection<Ref> refs = git.lsRemote()
         		.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password))
@@ -46,6 +46,6 @@ public class JGitTest {
             System.out.println("ref--->" + ref.getName());
             
         }
-        
+        git.close();
     }
 }

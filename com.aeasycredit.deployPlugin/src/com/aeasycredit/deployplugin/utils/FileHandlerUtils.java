@@ -1,4 +1,4 @@
-package com.aeasycredit.deployplugin.handlers;
+package com.aeasycredit.deployplugin.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,7 +24,7 @@ public final class FileHandlerUtils {
 	
 	private FileHandlerUtils() {}
     
-    static String getRootProjectPath(String projectPath) {
+	public static String getRootProjectPath(String projectPath) {
 //        String projectPath = project.getLocation().toFile().getPath();
         if (!new File(projectPath + File.separator + ".git").exists()) {
         	String parent = new File(projectPath).getParent();
@@ -36,7 +36,7 @@ public final class FileHandlerUtils {
         return projectPath;
     }
     
-    static String processScript(String projectPath, String scriptName) throws Exception {
+    public static String processScript(String projectPath, String scriptName) throws Exception {
     	String tempFolder = getTempFolder();
 //        String projectPath = project.getLocation().toFile().getPath();
         String rootProjectPath = getRootProjectPath(projectPath);
@@ -86,7 +86,7 @@ public final class FileHandlerUtils {
         return rootProjectPath+File.separator+cmd.replace("./", "");
     }
     
-    private static String getTempFolder() {
+    public static String getTempFolder() {
 //        if(SystemUtils.IS_OS_WINDOWS) {
 //            return System.getenv("TEMP");   
 //        } else {
@@ -107,7 +107,7 @@ public final class FileHandlerUtils {
         if(SystemUtils.IS_OS_WINDOWS) {
             String gitHome = System.getenv("GIT_HOME");
             if(StringUtils.isBlank(gitHome)) {
-                throw new FileNotFoundException("GIT_HOME env must be not empty.");
+                throw new FileNotFoundException("GIT_HOME env must not be empty.");
             }
         }
         String allCmd = cmd.replace(".sh", "All.sh");

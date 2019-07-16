@@ -1,12 +1,9 @@
 package com.aeasycredit.deployplugin.handlers;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,12 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.internal.resources.Project;
@@ -41,6 +35,7 @@ import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -50,11 +45,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.aeasycredit.deployplugin.CmdBuilder;
 import com.aeasycredit.deployplugin.CmdExecutor;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
+import com.aeasycredit.deployplugin.dialogs.PasswordDialog;
 import com.aeasycredit.deployplugin.exception.DeployPluginException;
 import com.aeasycredit.deployplugin.jobs.ClientJob;
 import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
+import com.aeasycredit.deployplugin.utils.BASE64Utils;
+import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 
 /**
  * AbstractDeployPluginHandler
@@ -83,6 +82,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     @Deprecated
     protected final static String MERGE_BAT = "./merge.sh";
     protected final static String MYBATISGEN_BAT = "./mybatisGen.sh";
+	private static File GIT_CACHE_FILE = new File(FileHandlerUtils.getTempFolder() + File.separator + "deployPluginCache");
     
     /**
      * 
@@ -217,7 +217,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
             // User clicked OK
             input = dlg.getValue();
             if(StringUtils.isBlank(input)) {
-                throw new DeployPluginException("Parameter must be not empty.");
+                throw new DeployPluginException("Parameter must not be empty.");
             }
         }
         return input;
@@ -424,6 +424,119 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
     }
     
+    /**
+     * Verify the account and password is correct?
+     * 
+     * @param user username
+     * @param pwd password
+     * @param rememberPwd Remember username and password?
+     * @return
+     */
+    private boolean checkUserPwd(String user, String pwd, boolean rememberPwd) {
+		String projectPath = project.getLocation().toFile().getPath();
+		String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+    	try {
+			Git git = Git.open(new File(rootProjectPath));
+			git.lsRemote().setCredentialsProvider(new UsernamePasswordCredentialsProvider(user, pwd)).call();
+			// save cache
+			if(rememberPwd) {
+				if (!GIT_CACHE_FILE.getParentFile().exists()) {
+					GIT_CACHE_FILE.getParentFile().mkdirs();
+				}
+				List<String> datas = new ArrayList<String>();
+				datas.add(user);
+				datas.add(BASE64Utils.encoder(pwd));
+				datas.add(String.valueOf(rememberPwd));
+				FileUtils.writeLines(GIT_CACHE_FILE, datas);
+			}
+			git.close();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+    }
+    
+	private UsernamePasswordCredentialsProvider getGitCache() throws IOException {
+		System.out.println("gitCacheFile-------->" + GIT_CACHE_FILE);
+		if (GIT_CACHE_FILE.exists()) {
+			@SuppressWarnings("unchecked")
+			List<String> datas = FileUtils.readLines(GIT_CACHE_FILE);
+			String user = datas.get(0);
+			String pwd = BASE64Utils.decoder(datas.get(1));
+			boolean rememberPwd = Boolean.valueOf(datas.get(2));
+			if(rememberPwd && checkUserPwd(user, pwd, true)) {
+				return new UsernamePasswordCredentialsProvider(user, pwd);
+			}
+		}
+		
+		PasswordDialog dialog = new PasswordDialog(shell);
+		// get the new values from the dialog
+		if (dialog.open() == Window.OK) {
+			String user = dialog.getUser();
+			String pwd = dialog.getPassword();
+			Boolean remember = dialog.getCheck();
+			System.out.println("user--->" + user);
+			System.out.println("pwd--->" + pwd);
+			System.out.println("remember--->" + remember);
+			if(checkUserPwd(user, pwd, remember)) {
+				return new UsernamePasswordCredentialsProvider(user, pwd);
+			} else {
+				return getGitCache();
+			}
+		}
+		return null;
+	}
+	
+	private List<String> getReleaseList() throws Exception {
+    	List<String> allReleases = Lists.newArrayList();
+    	String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+    	
+        // Get credentials provide via JGit
+        /*
+		UsernamePasswordCredentialsProvider provider = getGitCache();
+    	if(provider != null) {
+        	Git git = Git.open(new File(rootProjectPath));
+        	Collection<Ref> refs = git.lsRemote()
+            		.setCredentialsProvider(provider)
+            		.call();
+            for (Ref ref : refs) {
+                String r = ref.getName();
+//                System.out.println("ref--->" + r);
+        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
+        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
+                    allReleases.add(version);
+        		}
+            }
+            git.close();
+    	}*/
+        
+        String command = "git";
+	        String param = "ls-remote";
+	        String result = CmdExecutor.exec(rootProjectPath, command, param, true);
+//	        System.out.println("result----->"+result);
+	        if(!"".equals(result)) {
+	        	String[] results = result.split("[\n|\r\n]");
+	        	for(String r : results) {
+	        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
+	        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
+	                    allReleases.add(version);
+	        		}
+	        	}
+	        }
+        
+        // Order by list
+        /*Collections.sort(allReleases, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				String a1 = o1.replace("release", "").replace("hotfix", "").replace(".", "");
+				String a2 = o2.replace("release", "").replace("hotfix", "").replace(".", "");
+				return Integer.parseInt(a2) - Integer.parseInt(a1);
+			}
+        });*/
+    	return allReleases;
+	}
+    
     private void release(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
         
@@ -475,56 +588,26 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		                }
 		            }
 		        } else {
-//		            String tempFolder = getTempFolder();
-		            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, TAG_BAT);
-//		            String cmdName = FilenameUtils.getName(cmdFile);
-		            
-			        String command = "git";
-			        String param = "ls-remote";
-			        String result = CmdExecutor.exec(rootProjectPath, command, param, true);
-//			        System.out.println("result----->"+result);
-			        List<String> allReleases = Lists.newArrayList();
-			        if(!"".equals(result)) {
-			        	String[] results = result.split("[\n|\r\n]");
-			        	for(String r : results) {
-			        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
-			        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
-			                    allReleases.add(version);
-			        		}
-			        	}
-			        }
-//			        Collections.sort(allReleases, new Comparator<String>() {
-//			
-//						@Override
-//						public int compare(String o1, String o2) {
-//							String a1 = o1.replace("release", "").replace("hotfix", "").replace(".", "");
-//							String a2 = o2.replace("release", "").replace("hotfix", "").replace(".", "");
-//							return Integer.parseInt(a2) - Integer.parseInt(a1);
-//						}
-//			        	
-//			        });
-//			        System.out.println("allReleases1----->"+allReleases);
-//			        for(String x : allReleases.toArray(new String[allReleases.size()])) {
-//				        System.out.println("allReleases2----->"+x);
-//			        	
-//			        }
-			        
-			        ElementListSelectionDialog dlgs =
-			                new ElementListSelectionDialog(shell, new LabelProvider());
-		            dlgs.setElements(allReleases.toArray(new String[allReleases.size()]));
-		            dlgs.setTitle("Which release version do you want to pick?");
-		            if (dlgs.open() == Window.OK) {
-		                String releaseVersion = (String) dlgs.getFirstResult();
-		                String parameters = releaseVersion +" "+ dateString + " "+releaseType;
-//				        System.out.println("releaseVersion----->"+releaseVersion);
-				        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
-		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-		                    runJob(name, cmdBuilders);
-		                } else {
-//		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
-		                    throw new Exception("No project or package selected.");
-		                }
-		            }
+		        	List<String> allReleases = this.getReleaseList();
+		        	if(!allReleases.isEmpty()) {
+			        	ElementListSelectionDialog dlgs =
+				                new ElementListSelectionDialog(shell, new LabelProvider());
+			            dlgs.setElements(allReleases.toArray(new String[allReleases.size()]));
+			            dlgs.setTitle("Which release version do you want to pick?");
+			            if (dlgs.open() == Window.OK) {
+			                String releaseVersion = (String) dlgs.getFirstResult();
+			                String parameters = releaseVersion +" "+ dateString + " "+releaseType;
+//					        System.out.println("releaseVersion----->"+releaseVersion);
+				            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, TAG_BAT);
+					        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+			                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+			                    runJob(name, cmdBuilders);
+			                } else {
+//			                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+			                    throw new Exception("No project or package selected.");
+			                }
+			            }
+		        	}
 		        	
 		        }
             }
