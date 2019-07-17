@@ -37,10 +37,10 @@ public class DeployPluginPerencePage extends FieldEditorPreferencePage implement
 		
 		addField(new StringFieldEditor(PreferenceConstants.GIT_SCRIPTS_URL, "Gitlab url for download scripts:", getFieldEditorParent()));
 		
-//		addField(new StringFieldEditor(PreferenceConstants.GIT_USER_URL, "Gitlab username:", getFieldEditorParent()));
-//		StringFieldEditor password = new StringFieldEditor(PreferenceConstants.GIT_PWD_URL, "Gitlab password:", getFieldEditorParent());
-//		password.getTextControl(getFieldEditorParent()).setEchoChar('*');
-//		addField(password);
+		addField(new StringFieldEditor(PreferenceConstants.GIT_USER_URL, "Gitlab username:", getFieldEditorParent()));
+		StringFieldEditor password = new StringFieldEditor(PreferenceConstants.GIT_PWD_URL, "Gitlab password:", getFieldEditorParent());
+		password.getTextControl(getFieldEditorParent()).setEchoChar('*');
+		addField(password);
 
 //		addField(new RadioGroupFieldEditor(PreferenceConstants.P_CHOICE, "An example of a multiple-choice preference", 1, new String[][] { { "&Choice 1", "choice1" }, { "C&hoice 2", "choice2" } }, getFieldEditorParent()));
 //		addField(new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));

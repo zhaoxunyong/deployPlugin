@@ -1,7 +1,6 @@
 package com.aeasycredit.deployplugin.utils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -104,17 +103,19 @@ public final class FileHandlerUtils {
     	}
     	return file.getPath();
     }
+    
+    public static String getGitHome() {
+    	String gitHome = DeployPluginLauncherPlugin.getGitHomePath();
+    	if(StringUtils.isBlank(gitHome)) {
+            gitHome = System.getenv("GIT_HOME");
+    	}
+        if(StringUtils.isBlank(gitHome)) {
+            throw new RuntimeException("Git home must not be empty.");
+        }
+        return gitHome;
+    }
 
     private static String getCmdFile(String projectPath, String cmd) throws IOException {
-        if(SystemUtils.IS_OS_WINDOWS) {
-        	String gitHome = DeployPluginLauncherPlugin.getGitHomePath();
-        	if(StringUtils.isBlank(gitHome)) {
-                gitHome = System.getenv("GIT_HOME");
-        	}
-            if(StringUtils.isBlank(gitHome)) {
-                throw new FileNotFoundException("Git home must not be empty.");
-            }
-        }
         String allCmd = cmd.replace(".sh", "All.sh");
         String cmdFile = getParentCmdFile(projectPath, allCmd);
         if (new File(cmdFile).exists()) {

@@ -491,40 +491,41 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
     	
         // Get credentials provide via JGit
-        /*
+        
 //		UsernamePasswordCredentialsProvider provider = getGitCache();
         String username = DeployPluginLauncherPlugin.getGitUsername();
         String password = DeployPluginLauncherPlugin.getGitPassword();
-		UsernamePasswordCredentialsProvider provider = new UsernamePasswordCredentialsProvider(username, password);
-		
-    	if(provider != null) {
-        	Git git = Git.open(new File(rootProjectPath));
-        	Collection<Ref> refs = git.lsRemote()
-            		.setCredentialsProvider(provider)
-            		.call();
-            for (Ref ref : refs) {
-                String r = ref.getName();
-//                System.out.println("ref--->" + r);
-        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
-        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
-                    allReleases.add(version);
-        		}
-            }
-            git.close();
-    	}*/
-        
-        String command = "git";
-        String param = "ls-remote";
-        String result = CmdExecutor.exec(rootProjectPath, command, param, true);
-//	        System.out.println("result----->"+result);
-        if(!"".equals(result)) {
-        	String[] results = result.split("[\n|\r\n]");
-        	for(String r : results) {
-        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
-        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
-                    allReleases.add(version);
-        		}
+        if(StringUtils.isNotBlank(username) && StringUtils.isNotBlank(password)) {
+    		UsernamePasswordCredentialsProvider provider = new UsernamePasswordCredentialsProvider(username, password);
+        	if(provider != null) {
+            	Git git = Git.open(new File(rootProjectPath));
+            	Collection<Ref> refs = git.lsRemote()
+                		.setCredentialsProvider(provider)
+                		.call();
+                for (Ref ref : refs) {
+                    String r = ref.getName();
+//                    System.out.println("ref--->" + r);
+            		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
+            			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
+                        allReleases.add(version);
+            		}
+                }
+                git.close();
         	}
+        } else {
+            String command = "git";
+            String param = "ls-remote";
+            String result = CmdExecutor.exec(rootProjectPath, command, param, true);
+//    	        System.out.println("result----->"+result);
+            if(!"".equals(result)) {
+            	String[] results = result.split("[\n|\r\n]");
+            	for(String r : results) {
+            		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
+            			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
+                        allReleases.add(version);
+            		}
+            	}
+            }
         }
         
         // Order by list

@@ -12,6 +12,8 @@ import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang.SystemUtils;
 
+import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
+
 /**
  * DeployPluginHelper
  * 
@@ -49,7 +51,7 @@ public class CmdExecutor {
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
         String shell = "";
         if(SystemUtils.IS_OS_WINDOWS) {
-            shell = "\""+System.getenv("GIT_HOME")+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash")+" "+command+" "+params+"\"";
+            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash")+" "+command+" "+params+"\"";
         } else {
             shell = ""+(isBatchCommand?"":"bash")+" "+command+" "+params;
         }
