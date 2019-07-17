@@ -66,7 +66,7 @@ public final class FileHandlerUtils {
     private static String getRootUrl() {
     	String url = DeployPluginLauncherPlugin.getGitScriptsUrl();
     	if(StringUtils.isBlank(url)) {
-    		url = "http://gitlab.aeasycredit.net/dave.zhao/deployPlugin/raw/master";
+            throw new RuntimeException("GIT_HOME env must not be empty.");
     	}
     	return url;
     }
