@@ -97,8 +97,6 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         this.project = project;
     }
 
-
-
     @SuppressWarnings("rawtypes")
     protected IProject project() throws Exception {
 //      String name = "windows start";
@@ -193,12 +191,6 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         release(event, "Release");
     }
 
-    protected void merge(ExecutionEvent event) throws Exception {
-//        credentialHelper();
-//        throw new UnsupportedOperationException("Not implemented yet.");
-        merge(event, "Merge");
-    }
-
     protected void mybatisGen(ExecutionEvent event) throws Exception {
         mybatisGen(event, "Mybatis Gen");
     }
@@ -222,15 +214,19 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
     
     @SuppressWarnings("unchecked")
-    private String getPomVersion(String rootProjectPath) throws IOException {
-        String pomFile = rootProjectPath+"/pom.xml";
-        List<String> value = FileUtils.readLines(new File(pomFile));
+    private String getMavenPomVersion(String rootProjectPath) throws IOException {
         String version = "";
-        for(String v : value) {
-            if(v.indexOf("<version>")!=-1) {
-                version = StringUtils.substringBetween(v, "<version>", "</version>");
-                break;
+        String pomFile = rootProjectPath+"/pom.xml";
+        if(new File(pomFile).exists()) {
+            List<String> value = FileUtils.readLines(new File(pomFile));
+            for(String v : value) {
+                if(v.indexOf("<version>")!=-1) {
+                    version = StringUtils.substringBetween(v, "<version>", "</version>");
+                    break;
+                }
             }
+        } else {
+        	throw new DeployPluginException("It appears to be not a maven project, if you're using non-maven project, please process it by vscode plugin!");
         }
         return version;
     }
@@ -276,76 +272,13 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
          return "";
     }
 
-    private void merge(ExecutionEvent event, String name) throws Exception {
-        List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
-//        String tempFolder = getTempFolder();
-        String projectPath = project.getLocation().toFile().getPath();
-        String cmdFile = FileHandlerUtils.processScript(projectPath, MERGE_BAT);        
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
-//        String cmdName = FilenameUtils.getName(cmdFile);
-        
-        String pomVersion = getPomVersion(rootProjectPath);
-        String defaultValue = "";
-        
-        // Get release version
-        String releaseVersion = pomVersion.replace("-SNAPSHOT", "")+".release";
-        
-        // Check releaseVersion is exist
-        File repositoryDirectory = new File(rootProjectPath);
-        Git git = Git.open(repositoryDirectory);
-        List<Ref> refs = git.branchList().call();
-        for (Ref ref : refs) {
-//            System.out.println("ref--->" + ref.getName());
-            // ref.getName()--->refs/heads/1.7.x
-          if(("refs/heads/"+releaseVersion).equals(ref.getName())) {
-              defaultValue = releaseVersion+" master";
-              break;
-          }
-        }
-        
-        if(StringUtils.isBlank(defaultValue)) {
-//            throw new Exception(releaseVersion+" is not exist!");
-            defaultValue = pomVersion+" master";
-        }
-        
-        /*// Check releaseVersion is exist
-        File repositoryDirectory = new File(rootProjectPath);
-        // Get the instance of the DotGit Object
-        DotGit dotGit = DotGit.getInstance(repositoryDirectory);
-        Iterator<Ref> refs = dotGit.getBranches();
-        while(refs.hasNext()) {
-            Ref ref = refs.next();
-//            System.out.println("ref--->"+ref.getName()+"/"+ref.getRepositoryName());
-            if(releaseVersion.equals(ref.getName())) {
-                defaultValue = releaseVersion+" master";
-                break;
-            }
-        }*/
-        
-        String version = input(event, name, defaultValue, "branchFromVersion branchToVersion");
-        if( version.indexOf(" ") != -1) {
-            throw new Exception("The version is invalid.");
-        }
-        
-        if(StringUtils.isNotBlank(version)) {
-            
-            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, version));
-            if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-                runJob(name, cmdBuilders);
-            } else {
-//              MessageDialog.openError(shell, name, "No project or pakcage selected.");
-                throw new Exception("No project or package selected.");
-            }
-        }
-    }
-
     private void changeVersion(ExecutionEvent event, String name) throws Exception {
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
         String projectPath = project.getLocation().toFile().getPath();
         String cmdFile = FileHandlerUtils.processScript(projectPath, CHANGEVERSION_BAT);
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
-        String pomVersion = getPomVersion(rootProjectPath);
+        String pomVersion = getMavenPomVersion(rootProjectPath);
         String bPomVersion = StringUtils.substringBeforeLast(pomVersion, ".");
         String aPomVersion = StringUtils.substringAfterLast(pomVersion, ".").replace("-SNAPSHOT", "");
         aPomVersion = String.valueOf(Integer.parseInt(aPomVersion)+1);
@@ -375,7 +308,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdFile = FileHandlerUtils.processScript(projectPath, NEWBRANCH_BAT);
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
 //        String cmdName = FilenameUtils.getName(cmdFile);
-        String pomVersion = getPomVersion(rootProjectPath);
+        String pomVersion = getMavenPomVersion(rootProjectPath);
         // 1.5.6->1.6.x
         String bPomVersion = StringUtils.substringBeforeLast(pomVersion, "."); //1.5
         String a1PomVersion = StringUtils.substringBeforeLast(bPomVersion, "."); // 1
@@ -547,9 +480,13 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
         
         boolean continute = true;
-        String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
-        if(StringUtils.isNotBlank(snapshotPath)) {
-            continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release version. Do you want to continue?");
+        try {
+	        String snapshotPath = checkHasSnapshotVersion(rootProjectPath);
+	        if(StringUtils.isNotBlank(snapshotPath)) {
+	            continute = MessageDialog.openConfirm(shell, "process confirm?", "There is a SNAPSHOT version in "+snapshotPath+", when the version is released, it's suggested to replace it as release version. Do you want to continue?");
+	        }
+        }catch(Exception e) {
+        	// do nothing
         }
         
         if(continute) {
@@ -570,7 +507,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, RELEASE_BAT);
 //		            String cmdName = FilenameUtils.getName(cmdFile);
 		            
-		            String pomVersion = getPomVersion(rootProjectPath);
+		            String pomVersion = getMavenPomVersion(rootProjectPath);
 		            String defaultValue = pomVersion.replace("-SNAPSHOT", "")+"."+releaseType;
 		            
 		            String inputedVersion = input(event, name, defaultValue, "BranchVersion TagDate").trim();

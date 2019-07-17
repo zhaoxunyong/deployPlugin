@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
+import com.aeasycredit.deployplugin.exception.DeployPluginException;
 
 public final class FileHandlerUtils {
     
@@ -65,7 +66,7 @@ public final class FileHandlerUtils {
     private static String getRootUrl() {
     	String url = DeployPluginLauncherPlugin.getGitScriptsUrl();
     	if(StringUtils.isBlank(url)) {
-            throw new RuntimeException("Gitlab url must not be empty.");
+            throw new DeployPluginException("Gitlab url must not be empty.");
     	}
     	return url;
     }
@@ -110,7 +111,7 @@ public final class FileHandlerUtils {
             gitHome = System.getenv("GIT_HOME");
     	}
         if(StringUtils.isBlank(gitHome)) {
-            throw new RuntimeException("Git home must not be empty.");
+            throw new DeployPluginException("Git home must not be empty.");
         }
         return gitHome;
     }

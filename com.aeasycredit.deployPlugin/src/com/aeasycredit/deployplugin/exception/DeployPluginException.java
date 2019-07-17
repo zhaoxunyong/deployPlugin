@@ -10,7 +10,7 @@ package com.aeasycredit.deployplugin.exception;
  * @version 3.0
  * @since 1.0 
 */
-public class DeployPluginException extends Exception {
+public class DeployPluginException extends RuntimeException {
 
     private static final long serialVersionUID = 7718770093867602818L;
 
