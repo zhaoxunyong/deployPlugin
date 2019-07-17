@@ -106,7 +106,7 @@ public final class FileHandlerUtils {
     }
 
     private static String getCmdFile(String projectPath, String cmd) throws IOException {
-//        if(SystemUtils.IS_OS_WINDOWS) {
+        if(SystemUtils.IS_OS_WINDOWS) {
         	String gitHome = DeployPluginLauncherPlugin.getGitHomePath();
         	if(StringUtils.isBlank(gitHome)) {
                 gitHome = System.getenv("GIT_HOME");
@@ -114,7 +114,7 @@ public final class FileHandlerUtils {
             if(StringUtils.isBlank(gitHome)) {
                 throw new FileNotFoundException("Git home must not be empty.");
             }
-//        }
+        }
         String allCmd = cmd.replace(".sh", "All.sh");
         String cmdFile = getParentCmdFile(projectPath, allCmd);
         if (new File(cmdFile).exists()) {
