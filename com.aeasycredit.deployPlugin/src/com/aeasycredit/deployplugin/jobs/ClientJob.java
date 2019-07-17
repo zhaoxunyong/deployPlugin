@@ -10,7 +10,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.IProgressConstants;
 
-import com.aeasycredit.deployplugin.Activator;
+import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
 import com.aeasycredit.deployplugin.CmdBuilder;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
 
@@ -95,7 +95,7 @@ public class ClientJob extends Job {
      * of the job
      */
     protected void complete() {
-        setProperty(IProgressConstants.ICON_PROPERTY, Activator.getImageDescriptor("/icons/sample.gif"));
+        setProperty(IProgressConstants.ICON_PROPERTY, DeployPluginLauncherPlugin.getImageDescriptor("/icons/sample.gif"));
         Boolean isModal = (Boolean) this.getProperty(IProgressConstants.PROPERTY_IN_DIALOG);
         if (isModal != null && isModal.booleanValue()) {
             // The progress dialog is still open so

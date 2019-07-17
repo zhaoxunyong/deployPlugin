@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -45,6 +43,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.aeasycredit.deployplugin.CmdBuilder;
 import com.aeasycredit.deployplugin.CmdExecutor;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
+import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
 import com.aeasycredit.deployplugin.dialogs.PasswordDialog;
 import com.aeasycredit.deployplugin.exception.DeployPluginException;
 import com.aeasycredit.deployplugin.jobs.ClientJob;
@@ -53,7 +52,6 @@ import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.aeasycredit.deployplugin.utils.BASE64Utils;
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 
 /**
  * AbstractDeployPluginHandler
@@ -494,7 +492,11 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     	
         // Get credentials provide via JGit
         /*
-		UsernamePasswordCredentialsProvider provider = getGitCache();
+//		UsernamePasswordCredentialsProvider provider = getGitCache();
+        String username = DeployPluginLauncherPlugin.getGitUsername();
+        String password = DeployPluginLauncherPlugin.getGitPassword();
+		UsernamePasswordCredentialsProvider provider = new UsernamePasswordCredentialsProvider(username, password);
+		
     	if(provider != null) {
         	Git git = Git.open(new File(rootProjectPath));
         	Collection<Ref> refs = git.lsRemote()
@@ -512,18 +514,18 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     	}*/
         
         String command = "git";
-	        String param = "ls-remote";
-	        String result = CmdExecutor.exec(rootProjectPath, command, param, true);
+        String param = "ls-remote";
+        String result = CmdExecutor.exec(rootProjectPath, command, param, true);
 //	        System.out.println("result----->"+result);
-	        if(!"".equals(result)) {
-	        	String[] results = result.split("[\n|\r\n]");
-	        	for(String r : results) {
-	        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
-	        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
-	                    allReleases.add(version);
-	        		}
-	        	}
-	        }
+        if(!"".equals(result)) {
+        	String[] results = result.split("[\n|\r\n]");
+        	for(String r : results) {
+        		if(r.endsWith(".release") || r.endsWith(".hotfix")) {
+        			String version = StringUtils.substringAfterLast(r, "/");//.replace(".release", "").replace(".hotfix", "");
+                    allReleases.add(version);
+        		}
+        	}
+        }
         
         // Order by list
         /*Collections.sort(allReleases, new Comparator<String>() {

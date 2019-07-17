@@ -12,16 +12,10 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
+import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
+
 public final class FileHandlerUtils {
-    private static String ROOT_URL;
     
-    static {
-    	ROOT_URL = System.getenv("GIT_PLUGIN_URL");
-    	if(StringUtils.isBlank(ROOT_URL)) {
-    		ROOT_URL = "http://gitlab.aeasycredit.net/dave.zhao/deployPlugin/raw/master";
-    	}
-    }
-	
 	private FileHandlerUtils() {}
     
 	public static String getRootProjectPath(String projectPath) {
@@ -52,7 +46,7 @@ public final class FileHandlerUtils {
         if(scriptFile.exists()) {
             str = FileUtils.readFileToString(scriptFile, "UTF-8");
         } else {
-        	URL uri = new URL(ROOT_URL+"/"+changVersionName.replace("./", "/"));
+        	URL uri = new URL(getRootUrl()+"/"+changVersionName.replace("./", "/"));
         	InputStream input = uri.openStream();
         	try {
         		str = IOUtils.toString(input);
@@ -67,6 +61,14 @@ public final class FileHandlerUtils {
             return file.getPath().replace("\\", "/");
         }
         return file.getPath();
+    }
+    
+    private static String getRootUrl() {
+    	String url = DeployPluginLauncherPlugin.getGitScriptsUrl();
+    	if(StringUtils.isBlank(url)) {
+    		url = "http://gitlab.aeasycredit.net/dave.zhao/deployPlugin/raw/master";
+    	}
+    	return url;
     }
 
     private static String getParentCmdFile(String projectPath, String cmd) {
@@ -105,7 +107,10 @@ public final class FileHandlerUtils {
 
     private static String getCmdFile(String projectPath, String cmd) throws IOException {
         if(SystemUtils.IS_OS_WINDOWS) {
-            String gitHome = System.getenv("GIT_HOME");
+        	String gitHome = DeployPluginLauncherPlugin.getGitHomePath();
+        	if(StringUtils.isBlank(gitHome)) {
+                gitHome = System.getenv("GIT_HOME");
+        	}
             if(StringUtils.isBlank(gitHome)) {
                 throw new FileNotFoundException("GIT_HOME env must not be empty.");
             }

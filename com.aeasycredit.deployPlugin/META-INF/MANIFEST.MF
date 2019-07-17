@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DeployPlugin
 Bundle-SymbolicName: com.aeasycredit.DeployPlugin;singleton:=true
-Bundle-Version: 1.1.6
-Bundle-Activator: com.aeasycredit.deployplugin.Activator
+Bundle-Version: 1.1.7
+Bundle-Activator: com.aeasycredit.deployplugin.DeployPluginLauncherPlugin
 Bundle-Vendor: aEasy
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
