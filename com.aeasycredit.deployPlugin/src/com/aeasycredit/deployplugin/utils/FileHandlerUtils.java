@@ -66,7 +66,7 @@ public final class FileHandlerUtils {
     private static String getRootUrl() {
     	String url = DeployPluginLauncherPlugin.getGitScriptsUrl();
     	if(StringUtils.isBlank(url)) {
-            throw new RuntimeException("GIT_HOME env must not be empty.");
+            throw new RuntimeException("Gitlab url must not be empty.");
     	}
     	return url;
     }
@@ -106,15 +106,15 @@ public final class FileHandlerUtils {
     }
 
     private static String getCmdFile(String projectPath, String cmd) throws IOException {
-        if(SystemUtils.IS_OS_WINDOWS) {
+//        if(SystemUtils.IS_OS_WINDOWS) {
         	String gitHome = DeployPluginLauncherPlugin.getGitHomePath();
         	if(StringUtils.isBlank(gitHome)) {
                 gitHome = System.getenv("GIT_HOME");
         	}
             if(StringUtils.isBlank(gitHome)) {
-                throw new FileNotFoundException("GIT_HOME env must not be empty.");
+                throw new FileNotFoundException("Git home must not be empty.");
             }
-        }
+//        }
         String allCmd = cmd.replace(".sh", "All.sh");
         String cmdFile = getParentCmdFile(projectPath, allCmd);
         if (new File(cmdFile).exists()) {
