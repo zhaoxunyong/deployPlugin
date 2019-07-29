@@ -18,4 +18,7 @@ public class PreferenceConstants {
 	public static final String GIT_USER_URL = "gitUserPreference";
 	public static final String GIT_PWD_URL = "gitPwdPreference";
 	
+	public static final String GIT_SHOWTAG_IN_DROPDOWN = "gitShowTagInDropDown";
+	public static final String GIT_RELEASE_WITH_TAG = "gitReleaseWithTag";
+	
 }

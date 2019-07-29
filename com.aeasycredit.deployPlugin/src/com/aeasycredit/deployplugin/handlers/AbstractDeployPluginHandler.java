@@ -495,7 +495,12 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         	   
 	        ElementListSelectionDialog releaseTypeDialog =
 	                new ElementListSelectionDialog(shell, new LabelProvider());
-	        releaseTypeDialog.setElements(new String[] {"release", "hotfix", "tag"});
+	        List<String> releaseTypes = Lists.newArrayList("release", "hotfix");
+	        if(DeployPluginLauncherPlugin.getGitShowTagInDropDown()) {
+	        	releaseTypes.add("tag");
+	        }
+	        
+	        releaseTypeDialog.setElements(releaseTypes.toArray(new String[releaseTypes.size()]));
 	        releaseTypeDialog.setTitle("Which release type do you want to pick?");
             if (releaseTypeDialog.open() == Window.OK) {
                 String releaseType = (String) releaseTypeDialog.getFirstResult();
@@ -518,14 +523,37 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		            if(StringUtils.isNotBlank(inputedVersion)) {
 //		                String projectPath = project.getLocation().toFile().getPath();
 //		                String rootProjectPath = getParentProject(projectPath, cmd);
-		                String parameters = inputedVersion +" "+ dateString + " "+releaseType;
-		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
-		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-		                    runJob(name, cmdBuilders);
-		                } else {
-//		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
-		                    throw new Exception("No project or package selected.");
-		                }
+		            	boolean releaseWithTag = DeployPluginLauncherPlugin.getGitReleaseWithTag();
+		            	boolean goahead = false;
+		            	if(releaseWithTag) {
+			            	MessageDialog dialog = new MessageDialog(
+			            		      null, "Are you sure to tag?", null, "It will tag "+inputedVersion+"-"+dateString+" for "+inputedVersion+" automatically.",
+			            		      MessageDialog.QUESTION,
+			            		      new String[] {"Yes", "Cancel", "No"},
+			            		      0); // yes is the default
+		            		   int result = dialog.open();
+		            		   if(result == 2) {
+		            			   // "No" is selected
+		            			   releaseWithTag = false;
+		            		   }
+		            		   // 0:Yes 1: Cancel 2:No
+		            		   // excute if not canceled
+		            		   if(result == 0 || result == 2) {
+		            			   goahead = true;
+		            		   }
+		            	} else {
+		            		goahead = true;
+		            	}
+		            	if(goahead) {
+	   		                String parameters = inputedVersion +" "+ dateString + " "+releaseWithTag;
+	   		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+	   		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+	   		                    runJob(name, cmdBuilders);
+	   		                } else {
+//		   		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+	   		                    throw new Exception("No project or package selected.");
+	   		                }
+		            	}
 		            }
 		        } else {
 		        	List<String> allReleases = this.getReleaseList();

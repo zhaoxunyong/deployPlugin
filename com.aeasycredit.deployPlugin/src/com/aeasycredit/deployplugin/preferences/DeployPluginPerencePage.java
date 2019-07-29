@@ -3,6 +3,7 @@ package com.aeasycredit.deployplugin.preferences;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.StringFieldEditor;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -37,10 +38,14 @@ public class DeployPluginPerencePage extends FieldEditorPreferencePage implement
 		
 		addField(new StringFieldEditor(PreferenceConstants.GIT_SCRIPTS_URL, "Gitlab url for download scripts:", getFieldEditorParent()));
 		
-		addField(new StringFieldEditor(PreferenceConstants.GIT_USER_URL, "Gitlab username:", getFieldEditorParent()));
-		StringFieldEditor password = new StringFieldEditor(PreferenceConstants.GIT_PWD_URL, "Gitlab password:", getFieldEditorParent());
+		addField(new StringFieldEditor(PreferenceConstants.GIT_USER_URL, "Gitlab username(optional):", getFieldEditorParent()));
+		StringFieldEditor password = new StringFieldEditor(PreferenceConstants.GIT_PWD_URL, "Gitlab password(optional):", getFieldEditorParent());
 		password.getTextControl(getFieldEditorParent()).setEchoChar('*');
+		
 		addField(password);
+		
+		addField(new BooleanFieldEditor(PreferenceConstants.GIT_SHOWTAG_IN_DROPDOWN, "Show tag in dropdown?", getFieldEditorParent()));
+		addField(new BooleanFieldEditor(PreferenceConstants.GIT_RELEASE_WITH_TAG, "Tag the release version automatically?", getFieldEditorParent()));
 
 //		addField(new RadioGroupFieldEditor(PreferenceConstants.P_CHOICE, "An example of a multiple-choice preference", 1, new String[][] { { "&Choice 1", "choice1" }, { "C&hoice 2", "choice2" } }, getFieldEditorParent()));
 //		addField(new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));

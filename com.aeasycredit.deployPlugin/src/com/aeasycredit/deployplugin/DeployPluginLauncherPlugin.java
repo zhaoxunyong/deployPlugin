@@ -160,4 +160,14 @@ public class DeployPluginLauncherPlugin extends AbstractUIPlugin {
         IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
         return pref.getString(PreferenceConstants.GIT_PWD_URL);
     }
+    
+    public static boolean getGitShowTagInDropDown() {
+        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
+        return pref.getBoolean(PreferenceConstants.GIT_SHOWTAG_IN_DROPDOWN);
+    }
+    
+    public static boolean getGitReleaseWithTag() {
+        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
+        return pref.getBoolean(PreferenceConstants.GIT_RELEASE_WITH_TAG);
+    }
 }
