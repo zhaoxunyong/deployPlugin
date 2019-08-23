@@ -26,12 +26,12 @@ branchVersion=$1
 newDate=$2
 #Whether or not to tag this branch version: "false": don't tag "yes": tag
 needTag=$3
+desc=$4
 
 if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
   # echo "branchVersion must be not empty!"
-  echo "Usage: $0 BranchVersion newTagDate"
-  echo "$0 1.0.0.release 201802271230"
-  echo "$0 1.0.0.htofix 201802271230"
+  echo "Usage: $0 BranchVersion newTagDate needTag desc"
+  echo "$0 1.0.0.release 201802271230 false desc"
   exit -1
 fi
 
@@ -56,7 +56,10 @@ function SwitchBranch() {
 function Push() {
     branchVersions=$1
     git add .
-    git commit -m "Add New branch version to ${branchVersions}"
+    if [[ "$desc" == "" ]]; then
+      desc="Add New branch version to ${branchVersions}"
+    fi
+    git commit -m "${desc}"
     git push origin ${branchVersions}
     if [[ $? != 0 ]]; then
         echo "Pushing ${branchVersions} error."
@@ -67,7 +70,10 @@ function Push() {
 
 function Tag() {
     newTag=$1
-    git tag -a $newTag -m "For prod version ${newTag}"
+    if [[ "$desc" == "" ]]; then
+      desc="For prod version ${newTag}"
+    fi
+    git tag -a $newTag -m "${desc}"
     if [[ $? != 0 ]]; then
       echo "Tagging error!"
       exit -1
@@ -94,6 +100,22 @@ function deleteUnusedReleaseBranch() {
         git push origin --delete $deleteBranch &> /dev/null
     done
     echo "Keep only the last ${reserveVersionNumber} ${type} versions!"
+}
+
+function deleteUnusedTags() {
+  reserveVersionNumber=$2
+  if [[ "${reserveVersionNumber}" == "" ]]; then
+    reserveVersionNumber=20
+  fi
+  ready4deleteTags=`git ls-remote | grep -v "\^{}" |  grep tags|awk '{print $NF}'|sed 's;refs/tags/;;g'|sort -t '.' -r -k 2 -V|sed "1,${reserveVersionNumber}d"`
+  for tag in $ready4deleteTags
+  do
+    # echo "Deleting tag $tag is started..."
+    git tag -d $tag
+    git push origin :refs/tags/$tag
+    # echo "Tag $tag has beed deleted..."
+  done
+  echo "Keep only the last ${reserveVersionNumber} tags!"
 }
 
 function changeReleaseVersion() {

@@ -26,6 +26,7 @@ fi
 
 branchVersion=$1
 newDate=$2
+desc=$3
 
 if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
   # echo "branchVersion must be not empty!"
@@ -67,7 +68,10 @@ function Push() {
 
 function Tag() {
     newTag=$1
-    git tag -a $newTag -m "For prod version ${newTag}"
+    if [[ "$desc" == "" ]]; then
+      desc="For prod version ${newTag}"
+    fi
+    git tag -a $newTag -m "${desc}"
     if [[ $? != 0 ]]; then
       echo "Tag error!"
       exit -1
