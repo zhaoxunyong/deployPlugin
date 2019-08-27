@@ -22,11 +22,31 @@ if [[ $? != 0 ]]; then
 	exit -1
 fi
 
+git status|grep "git add" &> /dev/null
+if [[ $? == 0 ]]; then
+  echo "Your local repo seems changed, but not commit yet, please stage or stash changes first!"
+  exit -1
+fi
+
+currentBranchVersion=`git branch|grep "*"|sed 's;^* ;;'`
+git remote show origin|grep $currentBranchVersion | egrep "本地已过时|local out of date" &> /dev/null
+if [[ $? == 0 ]]; then
+  echo "Your local repo seems out of date, please \"git pull\" first!"
+  exit -1
+fi
+
+#git remote show origin|grep $currentBranchVersion | egrep "可快进|up to date" &> /dev/null
+#if [[ $? == 0 ]]; then
+#  echo "Your local repo seems to be up to date, please git push first!"
+#  exit -1
+#fi
+
 branchVersion=$1
 newDate=$2
 #Whether or not to tag this branch version: "false": don't tag "yes": tag
 needTag=$3
 desc=$4
+desc=${desc//\"/}
 
 if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
   # echo "branchVersion must be not empty!"
@@ -49,7 +69,7 @@ function SwitchBranch() {
             exit -1
         fi
     fi
-    echo "Switching branch to ${branchVersions} successful."
+    echo "Switching branch to ${branchVersions} successfully."
     # git branch
 }
 
@@ -65,7 +85,7 @@ function Push() {
         echo "Pushing ${branchVersions} error."
         exit -1
     fi
-    echo "Pushing ${branchVersions} successful."
+    echo "Pushing ${branchVersions} successfully."
 }
 
 function Tag() {
@@ -78,7 +98,7 @@ function Tag() {
       echo "Tagging error!"
       exit -1
     else
-      echo "Tagging to ${newTag} successful!"
+      echo "Tagging to ${newTag} successfully!"
       git push origin ${newTag}
     fi
 }
@@ -149,18 +169,24 @@ nextDevelopVersion=${arr[0]}.${arr[1]}.$((${arr[2]}+1))-SNAPSHOT
 
 currentBranchVersion=`git branch|grep "*"|sed 's;^* ;;'`
 echo "branchVersion--------${branchVersion}"
-echo "newTag--------${newTag}"
+#echo "newTag--------${newTag}"
 echo "currentBranchVersion--------${currentBranchVersion}"
 SwitchBranch $branchVersion
 
-
 changeReleaseVersion $releaseVersion &> /dev/null
+if [[ -f "deploy.sh" ]]; then
+  bash deploy.sh changeVersion $releaseVersion
+fi
 updateVersionRecord $releaseVersion
 
 # deploy
-cat pom.xml 2>/dev/null | grep "<skip_maven_deploy>false</skip_maven_deploy>" &> /dev/null
-if [[ $? == 0 ]]; then
-mvn clean deploy > /dev/null
+if [[ -f "deploy.sh" ]]; then
+  bash deploy.sh deploy $releaseVersion
+#else
+  #cat pom.xml 2>/dev/null | grep "<skip_maven_deploy>false</skip_maven_deploy>" &> /dev/null
+  #if [[ $? == 0 ]]; then
+  #  mvn clean deploy > /dev/null
+  #fi
 fi
 Push $branchVersion
 if [[ "$needTag" == "true" ]]; then
@@ -168,6 +194,9 @@ if [[ "$needTag" == "true" ]]; then
 fi
 git checkout $currentBranchVersion
 changeNextVersion $nextDevelopVersion &> /dev/null
+if [[ -f "deploy.sh" ]]; then
+  bash deploy.sh changeVersion $nextDevelopVersion
+fi
 updateVersionRecord $nextDevelopVersion
 Push $currentBranchVersion
 

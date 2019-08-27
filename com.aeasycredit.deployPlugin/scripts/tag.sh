@@ -1,4 +1,5 @@
 #!/bin/bash
+
 export PATH="/usr/local/bin:/usr/bin:$JAVA_HOME/bin:$MVN_HOME/bin:$PATH"
 
 sedi() {
@@ -24,9 +25,29 @@ if [[ $? != 0 ]]; then
 	exit -1
 fi
 
+git status|grep "git add" &> /dev/null
+if [[ $? == 0 ]]; then
+  echo "Your local repo seems changed, but not commit yet, please stage or stash changes first!"
+  exit -1
+fi
+
+currentBranchVersion=`git branch|grep "*"|sed 's;^* ;;'`
+git remote show origin|grep $currentBranchVersion | egrep "本地已过时|local out of date" &> /dev/null
+if [[ $? == 0 ]]; then
+  echo "Your local repo seems out of date, please \"git pull\" first!"
+  exit -1
+fi
+
+#git remote show origin|grep $currentBranchVersion | egrep "可快进|up to date" &> /dev/null
+#if [[ $? == 0 ]]; then
+#  echo "Your local repo seems to be up to date, please git push first!"
+#  exit -1
+#fi
+
 branchVersion=$1
 newDate=$2
 desc=$3
+desc=${desc//\"/}
 
 if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
   # echo "branchVersion must be not empty!"
@@ -52,18 +73,6 @@ function SwitchBranch() {
     fi
     echo "Switch branch to ${branchVersions} successful."
     # git branch
-}
-
-function Push() {
-    branchVersions=$1
-    git add .
-    git commit -m "Mod New branch version to ${branchVersions}"
-    git push origin ${branchVersions}
-    if [[ $? != 0 ]]; then
-        echo "Push ${branchVersions} error."
-        exit -1
-    fi
-    echo "Push ${branchVersions} successful."
 }
 
 function Tag() {

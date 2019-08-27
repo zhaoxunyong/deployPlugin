@@ -16,6 +16,9 @@ sedi() {
 NEW_VERSION=$1
 mvn versions:set -DnewVersion=${NEW_VERSION}
 mvn versions:commit
+if [[ -f "deploy.sh" ]]; then
+  bash deploy.sh changeVersion $NEW_VERSION
+fi
 
 #sedi "s;^version=.*;version=${NEW_VERSION};" docker-build.sh
 #sedi "s;^version=.*;version=${NEW_VERSION};" docker-create.sh
