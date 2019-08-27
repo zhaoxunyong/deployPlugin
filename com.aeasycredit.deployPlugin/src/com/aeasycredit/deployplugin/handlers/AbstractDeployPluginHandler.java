@@ -15,6 +15,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -213,6 +214,20 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         return input;
     }
     
+    private String desc(ExecutionEvent event, String name) throws Exception {
+    	InputDialog dlg = new InputDialog(HandlerUtil.getActiveShellChecked(event), name, "Add a message for git description", "", null);
+		String desc = "";
+		if (dlg.open() == Window.OK) {
+			// User clicked OK
+			desc = dlg.getValue();
+			if (StringUtils.isBlank(desc)) {
+//				throw new DeployPluginException("Please add a message for git description.");
+				return desc(event, name);
+			}
+		}
+		return desc;
+    }
+    
     @SuppressWarnings("unchecked")
     private String getMavenPomVersion(String rootProjectPath) throws IOException {
         String version = "";
@@ -323,13 +338,17 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if(StringUtils.isNotBlank(params)) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
-            
-            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, params));
-            if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-                runJob(name, cmdBuilders);
-            } else {
-//                MessageDialog.openError(shell, name, "No project or pakcage selected.");
-                throw new Exception("No project or package selected.");
+            String desc = desc(event, name);
+            if(StringUtils.isNotBlank(desc)) {
+            	params = params + " '" + desc +"'";
+                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, params));
+                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+                    runJob(name, cmdBuilders);
+                } else {
+//                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+                    throw new Exception("No project or package selected.");
+                }
+            	
             }
         }
     }
@@ -545,14 +564,18 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		            		goahead = true;
 		            	}
 		            	if(goahead) {
-	   		                String parameters = inputedVersion +" "+ dateString + " "+releaseWithTag;
-	   		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
-	   		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-	   		                    runJob(name, cmdBuilders);
-	   		                } else {
-//		   		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
-	   		                    throw new Exception("No project or package selected.");
-	   		                }
+	   		                
+							String desc = desc(event, name);
+							if(StringUtils.isNotBlank(desc)) {
+		   		                String parameters = inputedVersion +" "+ dateString + " "+releaseWithTag + " '"+desc+"'";
+		   		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+		   		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+		   		                    runJob(name, cmdBuilders);
+		   		                } else {
+//			   		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+		   		                    throw new Exception("No project or package selected.");
+		   		                }
+							}
 		            	}
 		            }
 		        } else {
@@ -564,15 +587,18 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 			            dlgs.setTitle("Which release version do you want to pick?");
 			            if (dlgs.open() == Window.OK) {
 			                String releaseVersion = (String) dlgs.getFirstResult();
-			                String parameters = releaseVersion +" "+ dateString + " "+releaseType;
-//					        System.out.println("releaseVersion----->"+releaseVersion);
-				            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, TAG_BAT);
-					        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
-			                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-			                    runJob(name, cmdBuilders);
-			                } else {
-//			                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
-			                    throw new Exception("No project or package selected.");
+			                String desc = desc(event, name);
+			                if(StringUtils.isNotBlank(desc)) {
+				                String parameters = releaseVersion +" "+ dateString + " '"+desc+"'";
+//						        System.out.println("releaseVersion----->"+releaseVersion);
+					            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, TAG_BAT);
+						        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+				                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+				                    runJob(name, cmdBuilders);
+				                } else {
+//				                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+				                    throw new Exception("No project or package selected.");
+				                }
 			                }
 			            }
 		        	}
