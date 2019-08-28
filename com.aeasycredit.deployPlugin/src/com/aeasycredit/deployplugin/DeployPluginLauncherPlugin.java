@@ -170,4 +170,9 @@ public class DeployPluginLauncherPlugin extends AbstractUIPlugin {
         IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
         return pref.getBoolean(PreferenceConstants.GIT_RELEASE_WITH_TAG);
     }
+    
+    public static boolean getGitBashDebug() {
+        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
+        return pref.getBoolean(PreferenceConstants.GIT_BASH_DEBUG);
+    }
 }

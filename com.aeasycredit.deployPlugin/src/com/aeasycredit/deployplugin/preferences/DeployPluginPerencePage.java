@@ -44,6 +44,8 @@ public class DeployPluginPerencePage extends FieldEditorPreferencePage implement
 		
 		addField(password);
 		
+		addField(new BooleanFieldEditor(PreferenceConstants.GIT_BASH_DEBUG, "Bash in debug model?", getFieldEditorParent()));
+		
 		addField(new BooleanFieldEditor(PreferenceConstants.GIT_SHOWTAG_IN_DROPDOWN, "Show tag in dropdown?", getFieldEditorParent()));
 		addField(new BooleanFieldEditor(PreferenceConstants.GIT_RELEASE_WITH_TAG, "Tag the release version automatically?", getFieldEditorParent()));
 

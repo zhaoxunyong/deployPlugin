@@ -46,6 +46,7 @@ public class DeployPluginHelper {
     private static MessageConsoleStream createConsole(String consoleName, boolean clean) {
         MessageConsole console = findConsole(consoleName);
         MessageConsoleStream cs = console.newMessageStream();
+        cs.setEncoding("utf-8");
         cs.setColor(Display.getDefault().getSystemColor(SWT.COLOR_BLACK));
         if(clean){
             console.clearConsole();
@@ -114,11 +115,14 @@ public class DeployPluginHelper {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
-        String shell = "";
+    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
+    	String debugStr = debug?"-x":"";
+    	// console.setEncoding("utf-8");
+    	String shell = "";
         if(SystemUtils.IS_OS_WINDOWS) {
-            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash")+" "+command+" "+params+"\"";
+            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
         } else {
-            shell = ""+(isBatchCommand?"":"bash")+" "+command+" "+params;
+            shell = ""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params;
         }
         CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();

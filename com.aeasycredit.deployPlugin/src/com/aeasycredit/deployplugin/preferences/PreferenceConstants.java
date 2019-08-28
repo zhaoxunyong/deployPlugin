@@ -20,5 +20,6 @@ public class PreferenceConstants {
 	
 	public static final String GIT_SHOWTAG_IN_DROPDOWN = "gitShowTagInDropDown";
 	public static final String GIT_RELEASE_WITH_TAG = "gitReleaseWithTag";
+	public static final String GIT_BASH_DEBUG = "gitBashDebug";
 	
 }
