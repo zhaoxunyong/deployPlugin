@@ -52,6 +52,7 @@ import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.aeasycredit.deployplugin.utils.BASE64Utils;
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
@@ -302,12 +303,13 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if(params.indexOf(" ") != -1) {
             throw new Exception("The version is invalid.");
         }
+        List<String> parameters = Splitter.on(" ").splitToList(params);
         
-        if(StringUtils.isNotBlank(params)) {
+        if(parameters!=null && !parameters.isEmpty()) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
             
-            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, params));
+            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 runJob(name, cmdBuilders);
             } else {
@@ -334,15 +336,16 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if(params.indexOf(" ") != -1) {
             throw new Exception("The version is invalid.");
         }
+        List<String> parameters = Splitter.on(" ").splitToList(params);
         
-        if(StringUtils.isNotBlank(params)) {
+        if(parameters!=null && !parameters.isEmpty()) {
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
-            // String desc = desc(event, name);
-			String desc = "";
-            //if(StringUtils.isNotBlank(desc)) {
-            	params = params + " '" + desc +"'";
-                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, params));
+            String desc = desc(event, name);
+            if(StringUtils.isNotBlank(desc)) {
+//            	params = params + " '" + desc +"'";
+            	parameters.add(desc);
+                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
                 if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                     runJob(name, cmdBuilders);
                 } else {
@@ -350,7 +353,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                     throw new Exception("No project or package selected.");
                 }
             	
-            //}
+            }
         }
     }
 
@@ -363,7 +366,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdFile = FileHandlerUtils.processScript(projectPath, MYBATISGEN_BAT);
 //        String cmdName = FilenameUtils.getName(cmdFile);
         
-        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, ""));
+        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, Lists.newArrayList()));
         if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
             boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
             if(isConfirm) {
@@ -467,8 +470,8 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         	}
         } else {
             String command = "git";
-            String param = "ls-remote";
-            String result = CmdExecutor.exec(rootProjectPath, command, param, true);
+            List<String> parameters = Lists.newArrayList("ls-remote");
+            String result = CmdExecutor.exec(rootProjectPath, command, parameters);
 //    	        System.out.println("result----->"+result);
             if(!"".equals(result)) {
             	String[] results = result.split("[\n|\r\n]");
@@ -566,10 +569,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		            	}
 		            	if(goahead) {
 	   		                
-//							String desc = desc(event, name);
-							String desc = "";
-							//if(StringUtils.isNotBlank(desc)) {
-		   		                String parameters = inputedVersion +" "+ dateString + " "+releaseWithTag + " "+desc+"";
+							String desc = desc(event, name);
+							if(StringUtils.isNotBlank(desc)) {
+		   		                List<String> parameters = Lists.newArrayList(inputedVersion, dateString, releaseWithTag+"", "\""+desc+"\"");
 		   		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
 		   		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
 		   		                    runJob(name, cmdBuilders);
@@ -577,7 +579,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //			   		                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
 		   		                    throw new Exception("No project or package selected.");
 		   		                }
-							//}
+							}
 		            	}
 		            }
 		        } else {
@@ -589,10 +591,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 			            dlgs.setTitle("Which release version do you want to pick?");
 			            if (dlgs.open() == Window.OK) {
 			                String releaseVersion = (String) dlgs.getFirstResult();
-			                //String desc = desc(event, name);
-							String desc = "";
-			                //if(StringUtils.isNotBlank(desc)) {
-				                String parameters = releaseVersion +" "+ dateString + " '"+desc+"'";
+			                String desc = desc(event, name);
+			                if(StringUtils.isNotBlank(desc)) {
+				                // String parameters = releaseVersion +" "+ dateString + " '"+desc+"'";
+		   		                List<String> parameters = Lists.newArrayList(releaseVersion, dateString, desc);
 //						        System.out.println("releaseVersion----->"+releaseVersion);
 					            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, TAG_BAT);
 						        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
@@ -602,7 +604,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //				                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
 				                    throw new Exception("No project or package selected.");
 				                }
-			                //}
+			                }
 			            }
 		        	}
 		        	

@@ -2,6 +2,7 @@ package com.aeasycredit.deployplugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -9,6 +10,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
@@ -19,6 +21,7 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
+import com.google.common.base.Joiner;
 
 /**
  * DeployPluginHelper
@@ -82,24 +85,17 @@ public class DeployPluginHelper {
     }
     
 
-    public static boolean exec(String workHome, String command, String params, boolean asyc) throws InterruptedException, IOException {
-        return exec(null, workHome, command, params, false, asyc);
-    }
-    
-
-    public static boolean exec(String workHome, String command, String params, boolean isBatchCommand, boolean asyc) throws InterruptedException, IOException {
-        return exec(null, workHome, command, params, isBatchCommand, asyc);
+    public static boolean exec(String workHome, String command, List<String> params, boolean asyc) throws InterruptedException, IOException {
+        return exec(null, workHome, command, params, asyc);
     }
 
     /** 
-     * <功能简述><br>
-     * <功能详细描述>
+     * 只支持sh脚本执行，如果是具体的命令的话，请使用CmdExecutor类执行
      *
      * @param console
      * @param workHome
      * @param command
      * @param params
-     * @param isBatchCommand 是通过文件执行，还是直接原始脚本执行,当isBatchCommand=true时表示直接传过来的是具体的命令，而不是sh文件。
      * @param asyc
      * @return
      * @throws IOException
@@ -111,20 +107,40 @@ public class DeployPluginHelper {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static boolean exec(final MessageConsoleStream console, String workHome, String command, String params, boolean isBatchCommand, boolean asyc) throws IOException, InterruptedException {
+    public static boolean exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean asyc) throws IOException, InterruptedException {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
     	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
     	String debugStr = debug?"-x":"";
     	// console.setEncoding("utf-8");
-    	String shell = "";
+    	/*String shell = "";
+    	String params = Joiner.on(" ").join(parameters);
         if(SystemUtils.IS_OS_WINDOWS) {
-            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
+            // shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
+            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" "+debugStr+" "+command+" "+params;
         } else {
-            shell = ""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params;
+            shell = "bash "+debugStr+" "+command+" "+params;
+        }*/
+        
+        CommandLine cmdLine = null;
+        if(SystemUtils.IS_OS_WINDOWS) {
+        	cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe");
+        } else {
+        	cmdLine = new CommandLine("bash");
         }
-        CommandLine cmdLine = CommandLine.parse(shell);
+        if(StringUtils.isNotBlank(debugStr)) {
+            cmdLine.addArgument(debugStr);
+        }
+        cmdLine.addArgument(command);
+        
+        if(parameters!=null && !parameters.isEmpty()) {
+        	for(String p : parameters) {
+        		cmdLine.addArgument(p);
+        	}
+        }
+        
+        // CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(workHome));
         

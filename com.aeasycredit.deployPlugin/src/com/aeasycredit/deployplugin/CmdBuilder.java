@@ -1,5 +1,7 @@
 package com.aeasycredit.deployplugin;
 
+import java.util.List;
+
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -17,9 +19,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class CmdBuilder {
     private String workHome;
     private String command;
-    private String params;
+    private List<String> params;
     
-    public CmdBuilder(String workHome, String command, String params) {
+    public CmdBuilder(String workHome, String command, List<String> params) {
         this.workHome = workHome;
         this.command = command;
         this.params = params;
@@ -41,11 +43,11 @@ public class CmdBuilder {
         this.command = command;
     }
     
-    public String getParams() {
+    public List<String> getParams() {
         return params;
     }
 
-    public void setParams(String params) {
+    public void setParams(List<String> params) {
         this.params = params;
     }
 

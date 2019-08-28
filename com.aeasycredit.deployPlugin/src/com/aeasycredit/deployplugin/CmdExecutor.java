@@ -3,6 +3,7 @@ package com.aeasycredit.deployplugin;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecuteResultHandler;
@@ -13,6 +14,7 @@ import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.lang.SystemUtils;
 
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
+import com.google.common.base.Joiner;
 
 /**
  * DeployPluginHelper
@@ -45,15 +47,20 @@ public class CmdExecutor {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static String exec(String workHome, String command, String params, boolean isBatchCommand) throws Exception {
+    public static String exec(String workHome, String command, List<String> parameters) throws Exception {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
-        String shell = "";
+    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
+    	String debugStr = debug?"-x":"";
+    	// console.setEncoding("utf-8");
+    	String shell = "";
+    	String params = Joiner.on(" ").join(parameters);
         if(SystemUtils.IS_OS_WINDOWS) {
-            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash")+" "+command+" "+params+"\"";
+            // shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
+            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" "+debugStr+" -c \""+command+" "+params+"\"";
         } else {
-            shell = ""+(isBatchCommand?"":"bash")+" "+command+" "+params;
+            shell = "bash "+debugStr+" "+command+" "+params;
         }
         CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
