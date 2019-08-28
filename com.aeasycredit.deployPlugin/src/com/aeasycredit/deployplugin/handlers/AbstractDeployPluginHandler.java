@@ -471,7 +471,8 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         } else {
             String command = "git";
             List<String> parameters = Lists.newArrayList("ls-remote");
-            String result = CmdExecutor.exec(rootProjectPath, command, parameters);
+            String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false, false);
+            // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
 //    	        System.out.println("result----->"+result);
             if(!"".equals(result)) {
             	String[] results = result.split("[\n|\r\n]");

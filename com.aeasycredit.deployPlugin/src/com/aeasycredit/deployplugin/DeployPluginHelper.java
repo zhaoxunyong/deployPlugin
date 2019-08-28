@@ -1,5 +1,6 @@
 package com.aeasycredit.deployplugin;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -85,7 +86,7 @@ public class DeployPluginHelper {
     }
     
 
-    public static boolean exec(String workHome, String command, List<String> params, boolean isBatchScript, boolean asyc) throws InterruptedException, IOException {
+    public static String exec(String workHome, String command, List<String> params, boolean isBatchScript, boolean asyc) throws InterruptedException, IOException {
         return exec(null, workHome, command, params, isBatchScript, asyc);
     }
 
@@ -107,7 +108,7 @@ public class DeployPluginHelper {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static boolean exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript, boolean asyc) throws IOException, InterruptedException {
+    public static String exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript, boolean asyc) throws IOException, InterruptedException {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
@@ -117,62 +118,85 @@ public class DeployPluginHelper {
     	/*String shell = "";
     	String params = Joiner.on(" ").join(parameters);
         if(SystemUtils.IS_OS_WINDOWS) {
-            // shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
-            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" "+debugStr+" "+command+" "+params;
+            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
         } else {
-            shell = "bash "+debugStr+" "+command+" "+params;
+            shell = ""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params;
         }*/
         
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
         	cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe");
+            if(StringUtils.isNotBlank(debugStr)) {
+                cmdLine.addArgument(debugStr);
+            }
+    		cmdLine = new CommandLine(command);
+            if(isBatchScript) {
+                if(parameters!=null && !parameters.isEmpty()) {
+                	for(String p : parameters) {
+                		cmdLine.addArgument(p);
+                	}
+                }
+            } else {
+            	String params = Joiner.on(" ").join(parameters);
+                cmdLine.addArgument("-c");
+                cmdLine.addArgument("\""+command+" "+params+"\"");
+            }
         } else {
-        	cmdLine = new CommandLine("bash");
-        }
-        if(StringUtils.isNotBlank(debugStr)) {
-            cmdLine.addArgument(debugStr);
-        }
-        
-        if(isBatchScript) {
-            cmdLine.addArgument(command);
+        	if(isBatchScript) {
+        		cmdLine = new CommandLine("bash");
+                if(StringUtils.isNotBlank(debugStr)) {
+                    cmdLine.addArgument(debugStr);
+                }
+                cmdLine.addArgument(command);
+        	} else {
+        		cmdLine = new CommandLine(command);
+        	}
             if(parameters!=null && !parameters.isEmpty()) {
             	for(String p : parameters) {
             		cmdLine.addArgument(p);
             	}
             }
-        } else {
-        	String params = Joiner.on(" ").join(parameters);
-            cmdLine.addArgument("-c");
-            cmdLine.addArgument("\""+command+" "+params+"\"");
         }
         
         // CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(workHome));
-        
-        if(console!=null){
-            executor.setStreamHandler(new PumpStreamHandler(new LogOutputStream() {
+        String out = "";
+        if(asyc) {
+            if(console!=null){
+                executor.setStreamHandler(new PumpStreamHandler(new LogOutputStream() {
 
-                @Override
-                protected void processLine(String line, int level) {
-                    console.println(line);
-                }
-            }, new LogOutputStream() {
+                    @Override
+                    protected void processLine(String line, int level) {
+                        console.println(line);
+                    }
+                }, new LogOutputStream() {
 
-                @Override
-                protected void processLine(String line, int level) {
-                    console.println(line);
-                }
-            }));
+                    @Override
+                    protected void processLine(String line, int level) {
+                        console.println(line);
+                    }
+                }));
+            }
+            
+            int code = executor.execute(cmdLine);
+            if(asyc){
+              DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
+              executor.execute(cmdLine, resultHandler);
+//              resultHandler.waitFor();
+            }
+            out = String.valueOf(code);
+            // return code == 0 ? true:false;
+        	
+        } else {
+        	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+            PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream,errorStream);
+            executor.setStreamHandler(streamHandler);
+            executor.execute(cmdLine);
+            out = outputStream.toString("utf-8");
         }
-        
-        int code = executor.execute(cmdLine);
-        if(asyc){
-          DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
-          executor.execute(cmdLine, resultHandler);
-//          resultHandler.waitFor();
-        }
-        return code == 0 ? true:false;
+        return out;
     }
     
     
