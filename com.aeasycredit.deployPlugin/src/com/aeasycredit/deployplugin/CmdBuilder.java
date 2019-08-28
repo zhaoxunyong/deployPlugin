@@ -20,10 +20,12 @@ public class CmdBuilder {
     private String workHome;
     private String command;
     private List<String> params;
+    private boolean isBatchScript;
     
-    public CmdBuilder(String workHome, String command, List<String> params) {
+    public CmdBuilder(String workHome, String command, boolean isBatchScript, List<String> params) {
         this.workHome = workHome;
         this.command = command;
+        this.isBatchScript = isBatchScript;
         this.params = params;
     }
 
@@ -50,8 +52,16 @@ public class CmdBuilder {
     public void setParams(List<String> params) {
         this.params = params;
     }
+    
+    public boolean isBatchScript() {
+		return isBatchScript;
+	}
 
-    public String toString() {
+	public void setBatchScript(boolean isBatchScript) {
+		this.isBatchScript = isBatchScript;
+	}
+
+	public String toString() {
         return ReflectionToStringBuilder.toString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
 }

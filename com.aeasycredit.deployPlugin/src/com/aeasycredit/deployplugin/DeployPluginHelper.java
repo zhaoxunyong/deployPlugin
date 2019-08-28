@@ -85,8 +85,8 @@ public class DeployPluginHelper {
     }
     
 
-    public static boolean exec(String workHome, String command, List<String> params, boolean asyc) throws InterruptedException, IOException {
-        return exec(null, workHome, command, params, asyc);
+    public static boolean exec(String workHome, String command, List<String> params, boolean isBatchScript, boolean asyc) throws InterruptedException, IOException {
+        return exec(null, workHome, command, params, isBatchScript, asyc);
     }
 
     /** 
@@ -107,7 +107,7 @@ public class DeployPluginHelper {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static boolean exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean asyc) throws IOException, InterruptedException {
+    public static boolean exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript, boolean asyc) throws IOException, InterruptedException {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
@@ -132,12 +132,18 @@ public class DeployPluginHelper {
         if(StringUtils.isNotBlank(debugStr)) {
             cmdLine.addArgument(debugStr);
         }
-        cmdLine.addArgument(command);
         
-        if(parameters!=null && !parameters.isEmpty()) {
-        	for(String p : parameters) {
-        		cmdLine.addArgument(p);
-        	}
+        if(isBatchScript) {
+            cmdLine.addArgument(command);
+            if(parameters!=null && !parameters.isEmpty()) {
+            	for(String p : parameters) {
+            		cmdLine.addArgument(p);
+            	}
+            }
+        } else {
+        	String params = Joiner.on(" ").join(parameters);
+            cmdLine.addArgument("-c");
+            cmdLine.addArgument("\""+command+" "+params+"\"");
         }
         
         // CommandLine cmdLine = CommandLine.parse(shell);

@@ -11,6 +11,7 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
@@ -51,7 +52,7 @@ public class CmdExecutor {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
-    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
+    	/*boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
     	String debugStr = debug?"-x":"";
     	// console.setEncoding("utf-8");
     	String shell = "";
@@ -62,7 +63,24 @@ public class CmdExecutor {
         } else {
             shell = "bash "+debugStr+" "+command+" "+params;
         }
-        CommandLine cmdLine = CommandLine.parse(shell);
+        CommandLine cmdLine = CommandLine.parse(shell);*/
+    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
+    	String debugStr = debug?"-x":"";
+    	CommandLine cmdLine = null;
+        if(SystemUtils.IS_OS_WINDOWS) {
+        	cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe");
+        } else {
+        	cmdLine = new CommandLine("bash");
+        }
+        if(StringUtils.isNotBlank(debugStr)) {
+            cmdLine.addArgument(debugStr);
+        }
+        
+    	String params = Joiner.on(" ").join(parameters);
+        cmdLine.addArgument("-c");
+        cmdLine.addArgument("\""+command+" "+params+"\"");
+        
+        // CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(workHome));
         

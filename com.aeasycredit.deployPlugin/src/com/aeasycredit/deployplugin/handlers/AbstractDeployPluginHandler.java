@@ -309,7 +309,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //            String projectPath = project.getLocation().toFile().getPath();
 //            String rootProjectPath = getParentProject(projectPath, cmd);
             
-            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, parameters));
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 runJob(name, cmdBuilders);
             } else {
@@ -345,7 +345,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
             if(StringUtils.isNotBlank(desc)) {
 //            	params = params + " '" + desc +"'";
             	parameters.add(desc);
-                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, parameters));
                 if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                     runJob(name, cmdBuilders);
                 } else {
@@ -366,7 +366,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String cmdFile = FileHandlerUtils.processScript(projectPath, MYBATISGEN_BAT);
 //        String cmdName = FilenameUtils.getName(cmdFile);
         
-        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, Lists.newArrayList()));
+        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList()));
         if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
             boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
             if(isConfirm) {
@@ -572,7 +572,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 							String desc = desc(event, name);
 							if(StringUtils.isNotBlank(desc)) {
 		   		                List<String> parameters = Lists.newArrayList(inputedVersion, dateString, releaseWithTag+"", "\""+desc+"\"");
-		   		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+		   		                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, parameters));
 		   		                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
 		   		                    runJob(name, cmdBuilders);
 		   		                } else {
@@ -597,7 +597,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		   		                List<String> parameters = Lists.newArrayList(releaseVersion, dateString, desc);
 //						        System.out.println("releaseVersion----->"+releaseVersion);
 					            String cmdFile = FileHandlerUtils.processScript(rootProjectPath, TAG_BAT);
-						        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, parameters));
+						        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, parameters));
 				                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
 				                    runJob(name, cmdBuilders);
 				                } else {
