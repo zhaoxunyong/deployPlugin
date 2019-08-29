@@ -219,7 +219,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		String desc = "";
 		if (dlg.open() == Window.OK) {
 			// User clicked OK
-			desc = dlg.getValue();
+			desc = dlg.getValue().trim();
 			if (StringUtils.isBlank(desc)) {
 //				throw new DeployPluginException("Please add a message for git description.");
 				return desc(event, name);
