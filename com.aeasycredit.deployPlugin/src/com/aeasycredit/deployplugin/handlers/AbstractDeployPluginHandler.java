@@ -331,11 +331,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String a2PomVersion = StringUtils.substringAfterLast(bPomVersion, "."); // 5
         a2PomVersion = String.valueOf(Integer.parseInt(a2PomVersion)+1);
         String defaultValue = a1PomVersion+"."+a2PomVersion+".x"; // 1.6.x
+        List<String> parameters = Lists.newArrayList();
         String params = input(event, name, defaultValue, "newBranch");
-        if(params.indexOf(" ") != -1) {
-            throw new Exception("The version is invalid.");
-        }
-        List<String> parameters = Splitter.on(" ").splitToList(params);
+        parameters.add(params);
         
         if(parameters!=null && !parameters.isEmpty()) {
 //            String projectPath = project.getLocation().toFile().getPath();
