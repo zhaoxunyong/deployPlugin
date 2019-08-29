@@ -86,8 +86,8 @@ public class DeployPluginHelper {
     }
     
 
-    public static String exec(String workHome, String command, List<String> params, boolean isBatchScript, boolean asyc) throws InterruptedException, IOException {
-        return exec(null, workHome, command, params, isBatchScript, asyc);
+    public static String exec(String workHome, String command, List<String> params, boolean isBatchScript) throws InterruptedException, IOException {
+        return exec(null, workHome, command, params, isBatchScript);
     }
 
     /** 
@@ -97,7 +97,6 @@ public class DeployPluginHelper {
      * @param workHome
      * @param command
      * @param params
-     * @param asyc
      * @return
      * @throws IOException
      * @throws InterruptedException
@@ -108,7 +107,7 @@ public class DeployPluginHelper {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static String exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript, boolean asyc) throws IOException, InterruptedException {
+    public static String exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
@@ -162,39 +161,38 @@ public class DeployPluginHelper {
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(workHome));
         String out = "";
-        if(asyc) {
-            if(console!=null){
-                executor.setStreamHandler(new PumpStreamHandler(new LogOutputStream() {
+        if(console!=null) {
+            executor.setStreamHandler(new PumpStreamHandler(new LogOutputStream() {
 
-                    @Override
-                    protected void processLine(String line, int level) {
-                        console.println(line);
-                    }
-                }, new LogOutputStream() {
+                @Override
+                protected void processLine(String line, int level) {
+                    console.println(line);
+                }
+            }, new LogOutputStream() {
 
-                    @Override
-                    protected void processLine(String line, int level) {
-                        console.println(line);
-                    }
-                }));
-            }
+                @Override
+                protected void processLine(String line, int level) {
+                    console.println(line);
+                }
+            }));
             
             int code = executor.execute(cmdLine);
-            if(asyc){
-              DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
-              executor.execute(cmdLine, resultHandler);
-//              resultHandler.waitFor();
-            }
+            /*if(asyc){
+                  DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
+                  executor.execute(cmdLine, resultHandler);
+//                  resultHandler.waitFor();
+                }*/
             out = String.valueOf(code);
             // return code == 0 ? true:false;
-        	
         } else {
+        	// return the output
         	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
             PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream,errorStream);
             executor.setStreamHandler(streamHandler);
             executor.execute(cmdLine);
             out = outputStream.toString("utf-8");
+        	
         }
         return out;
     }

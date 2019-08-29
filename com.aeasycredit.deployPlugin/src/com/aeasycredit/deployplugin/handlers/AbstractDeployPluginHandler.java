@@ -42,7 +42,6 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.aeasycredit.deployplugin.CmdBuilder;
-import com.aeasycredit.deployplugin.CmdExecutor;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
 import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
 import com.aeasycredit.deployplugin.dialogs.PasswordDialog;
@@ -471,7 +470,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         } else {
             String command = "git";
             List<String> parameters = Lists.newArrayList("ls-remote");
-            String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false, false);
+            String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
             // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
 //    	        System.out.println("result----->"+result);
             if(!"".equals(result)) {

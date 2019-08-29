@@ -58,7 +58,7 @@ public class ClientJob extends Job {
             boolean ok = true;
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 for (CmdBuilder cmdBuilder : cmdBuilders) {
-                    String runOk = DeployPluginHelper.exec(completionAction.getConsole(), cmdBuilder.getWorkHome(), cmdBuilder.getCommand(), cmdBuilder.getParams(), cmdBuilder.isBatchScript(), true);
+                    String runOk = DeployPluginHelper.exec(completionAction.getConsole(), cmdBuilder.getWorkHome(), cmdBuilder.getCommand(), cmdBuilder.getParams(), cmdBuilder.isBatchScript());
                     if (!"0".equals(runOk)) {
                         ok = false;
                         break;
