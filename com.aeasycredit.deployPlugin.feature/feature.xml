@@ -2,7 +2,7 @@
 <feature
       id="com.aeasycredit.deployPlugin.feature"
       label="com.aeasycredit.deployplugin"
-      version="1.1.13"
+      version="1.1.14"
       provider-name="zerofinance"
       plugin="com.aeasycredit.DeployPlugin">
 
@@ -11,11 +11,11 @@
    </description>
 
    <copyright url="http://www.aeasycredit.com/copyright">
-      http://www.aeasycredit.com/copyright
+      http://www.zerofinance.cn/copyright
    </copyright>
 
-   <license url="http://www.aeasycredit.com/license">
-      http://www.aeasycredit.com/license
+   <license url="http://www.zerofinance.cn/license">
+      http://www.zerofinance.cn/license
    </license>
 
    <url>
@@ -26,7 +26,7 @@
          id="com.aeasycredit.DeployPlugin"
          download-size="0"
          install-size="0"
-         version="1.1.13"
+         version="1.1.14"
          unpack="false"/>
 
 </feature>
