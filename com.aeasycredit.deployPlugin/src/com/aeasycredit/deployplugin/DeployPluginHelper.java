@@ -129,8 +129,8 @@ public class DeployPluginHelper {
             if(StringUtils.isNotBlank(debugStr)) {
                 cmdLine.addArgument(debugStr);
             }
-    		cmdLine = new CommandLine(command);
             if(isBatchScript) {
+        		cmdLine.addArgument(command);
                 if(parameters!=null && !parameters.isEmpty()) {
                 	for(String p : parameters) {
                 		cmdLine.addArgument(p);
