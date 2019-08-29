@@ -2,14 +2,10 @@ package com.aeasycredit.deployplugin;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
@@ -17,8 +13,8 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 // http://www.codeaffine.com/2015/12/15/getting-started-with-jgit/
 public class JGitTest {
     public static void main(String[] args) throws Exception {
-        String username = "dave.zhao@zerofinance.cn";
-        String password = "Aa654321";
+        String username = "";
+        String password = "";
         
 //        FileRepositoryBuilder builder = new FileRepositoryBuilder();
 //        Repository repository = builder.setGitDir(new File("/Developer/workspace/gittest"))
