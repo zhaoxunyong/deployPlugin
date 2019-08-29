@@ -206,7 +206,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String input = "";
         if (dlg.open() == Window.OK) {
             // User clicked OK
-            input = dlg.getValue();
+            input = dlg.getValue().trim();
             if(StringUtils.isBlank(input)) {
                 throw new DeployPluginException("Parameter must not be empty.");
             }
@@ -298,22 +298,22 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         String aPomVersion = StringUtils.substringAfterLast(pomVersion, ".").replace("-SNAPSHOT", "");
         aPomVersion = String.valueOf(Integer.parseInt(aPomVersion)+1);
         String defaultValue = bPomVersion+"."+aPomVersion+"-SNAPSHOT";
+        List<String> parameters = Lists.newArrayList();
         String params = input(event, name, defaultValue, "newVersion");
-        if(params.indexOf(" ") != -1) {
-            throw new Exception("The version is invalid.");
-        }
-        List<String> parameters = Splitter.on(" ").splitToList(params);
-        
-        if(parameters!=null && !parameters.isEmpty()) {
-//            String projectPath = project.getLocation().toFile().getPath();
-//            String rootProjectPath = getParentProject(projectPath, cmd);
+        if(StringUtils.isNotBlank(params)) {
+            parameters.add(params);
             
-            cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, parameters));
-            if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
-                runJob(name, cmdBuilders);
-            } else {
-//                MessageDialog.openError(shell, name, "No project or pakcage selected.");
-                throw new Exception("No project or package selected.");
+            if(parameters!=null && !parameters.isEmpty()) {
+//                String projectPath = project.getLocation().toFile().getPath();
+//                String rootProjectPath = getParentProject(projectPath, cmd);
+                
+                cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, parameters));
+                if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
+                    runJob(name, cmdBuilders);
+                } else {
+//                    MessageDialog.openError(shell, name, "No project or pakcage selected.");
+                    throw new Exception("No project or package selected.");
+                }
             }
         }
     }
