@@ -56,6 +56,9 @@ import com.google.common.collect.Lists;
 
 /**
  * AbstractDeployPluginHandler
+ * getCurrentRemoteBranch: git ls-remote | grep -v "\^{}" |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i "\.x$" | sed -n '1p'
+ * getMaxRemoteReleaseBranch: git ls-remote | grep -v "\^{}" |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i "(release|hotfix)$" | sed -n '1p'
+
  * 
  * <p>
  * <a href="AbstractDeployPluginHandler.java"><i>View Source</i></a>
@@ -228,8 +231,82 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		return desc;
     }
     
+    /**
+     * 如果version1>version2返回1，如果version<version2返回-1，否则返回0
+     */
+    private int compareVersion(String version1, String version2) {
+    	if(version1==null || version2==null)
+    		return 0;
+    	
+    	String[] str1 = version1.split("\\.");
+    	String[] str2 = version2.split("\\.");
+    	
+    	for(int i=0; i<str1.length || i<str2.length;){
+    		int n1 = i<str1.length ? Integer.parseInt(str1[i]) : 0;
+    		int n2 = i<str2.length ? Integer.parseInt(str2[i]) : 0;
+    		if(n1 > n2) return 1;
+    		else if(n1 < n2) return -1;
+    		else i++;			
+    	}
+    	
+    	return 0;
+    }
+    
+    private String[] lsRemote(String rootProjectPath) throws Exception {
+    	String command = "git";
+        List<String> parameters = Lists.newArrayList("ls-remote");
+        String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+        // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
+//	        System.out.println("result----->"+result);
+        if(!"".equals(result)) {
+        	return result.split("[\n|\r\n]");
+        }
+        return null;
+    }
+    
+    private String getCurrentDevelopVersion(String[] results) throws Exception {
+    	String currentBranch = "";
+        if(results != null) {
+		    String version2 = "0.0.0";
+    		for(String version : results) {
+    			if(version.endsWith(".x")) {
+//		            String remoteBranchVersion = version.split("/")[2];
+		            String remoteBranchVersion = StringUtils.substringAfterLast(version, "/");//.replace(".release", "").replace(".hotfix", "");
+		            String version1 = remoteBranchVersion;
+		            // 如果version1>version2返回1，如果version<version2返回-1，否则返回0
+		            if(compareVersion(version1, version2) == 1) {
+		            	version2 = version1;
+		                currentBranch = remoteBranchVersion;
+		            }
+		        }
+		    }
+        }
+        return currentBranch;
+    }
+    
     @SuppressWarnings("unchecked")
-    private String getMavenPomVersion(String rootProjectPath) throws IOException {
+    private String getRemoteVersion(String[] results) throws Exception {
+    	String currentBranch = "";
+        if(results != null) {
+		    String version2 = "0.0.0";
+    		for(String version : results) {
+    			if(version.endsWith(".release") || version.endsWith(".hotfix")) {
+//		            String remoteBranchVersion = version.split("/")[2];
+		            String remoteBranchVersion = StringUtils.substringAfterLast(version, "/");//.replace(".release", "").replace(".hotfix", "");
+		            String version1 = remoteBranchVersion.replaceAll("\\.release|\\.hotfix", "");
+		            // 如果version1>version2返回1，如果version<version2返回-1，否则返回0
+		            if(compareVersion(version1, version2) == 1) {
+		            	version2 = version1;
+		                currentBranch = remoteBranchVersion;
+		            }
+		        }
+		    }
+        }
+        return currentBranch;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private String getMavenPomVersion(String rootProjectPath) throws Exception {
         String version = "";
         String pomFile = rootProjectPath+"/pom.xml";
         if(new File(pomFile).exists()) {
@@ -241,7 +318,30 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                 }
             }
         } else {
-        	throw new DeployPluginException("It appears to be not a maven project, if you're using non-maven project, please process it by vscode plugin!");
+//        	throw new DeployPluginException("It seems not a maven project, if you're using non-maven project, please handle it by vscode plugin!");
+        	String[] results = this.lsRemote(rootProjectPath);
+        	String currentDevelopVersion = getCurrentDevelopVersion(results);
+        	if(StringUtils.isBlank(currentDevelopVersion)) {
+        		throw new Exception("Please create a branch first.");
+        	}
+        	String[] currentBranchs = currentDevelopVersion.split("[.]");
+        	String b1 = currentBranchs[0];
+        	String b2 = currentBranchs[1];
+        	version = getRemoteVersion(results).replaceAll("\\.(release|hotfix)$", "");
+        	String[] currentReleases = version.split("[.]");
+        	if (currentReleases.length >= 3) {
+                String p1 = currentReleases[0];
+                String p2 = currentReleases[1];
+                String p3 = currentReleases[2];
+                String compareBranch = b1 + b2;
+                String compareTag = p1 + p2;
+                if (!compareBranch.equals(compareTag)) {
+                	version = b1 + "." + b2 + ".0";
+                } else {
+                    int nextP3 = Integer.parseInt(p3) + 1;
+                    version = p1 + '.' + p2 + '.' + nextP3;
+                }
+            }
         }
         return version;
     }
