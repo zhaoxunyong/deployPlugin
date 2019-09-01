@@ -14,6 +14,25 @@ sedi() {
 # script replace, don't delete.
 #cd #{project}
 
+branchVersion=$1
+newDate=$2
+desc=$3
+
+if [[ "$desc" == "" ]]; then
+  echo "Please add a message for git!"
+  exit -1
+fi
+
+desc=${desc//\"/}
+
+if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
+  # echo "branchVersion must be not empty!"
+  echo "Usage: $0 BranchVersion newTagDate"
+  echo "$0 1.0.0.release 201802271230"
+  echo "$0 1.0.0.htofix 201802271230"
+  exit -1
+fi
+
 #检查是否已经保存过git的账户与密码
 git ls-remote > /dev/null
 if [[ $? != 0 ]]; then
@@ -43,19 +62,6 @@ fi
 #  echo "Your local repo seems to be up to date, please git push first!"
 #  exit -1
 #fi
-
-branchVersion=$1
-newDate=$2
-desc=$3
-desc=${desc//\"/}
-
-if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
-  # echo "branchVersion must be not empty!"
-  echo "Usage: $0 BranchVersion newTagDate"
-  echo "$0 1.0.0.release 201802271230"
-  echo "$0 1.0.0.htofix 201802271230"
-  exit -1
-fi
 
 newTag=${branchVersion}-${newDate}
 

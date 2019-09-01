@@ -15,7 +15,13 @@ sedi() {
 
 NEW_VERSION=$1
 mvn versions:set -DnewVersion=${NEW_VERSION}
-mvn versions:commit
+if [[ $? == 0 ]]; then
+  mvn versions:commit
+else
+  mvn versions:revert
+  echo "Changed version failed, please check!"
+  exit -1
+fi
 if [[ -f "deploy.sh" ]]; then
   bash deploy.sh changeVersion $NEW_VERSION
 fi

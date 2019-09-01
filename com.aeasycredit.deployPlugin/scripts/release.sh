@@ -13,6 +13,26 @@ sedi() {
 # script replace, don't delete.
 #cd #{project}
 
+branchVersion=$1
+newDate=$2
+#Whether or not to tag this branch version: "false": don't tag "yes": tag
+needTag=$3
+desc=$4
+
+if [[ "$desc" == "" ]]; then
+  echo "Please add a message for git!"
+  exit -1
+fi
+
+desc=${desc//\"/}
+
+if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
+  # echo "branchVersion must be not empty!"
+  echo "Usage: $0 BranchVersion newTagDate needTag desc"
+  echo "$0 1.0.0.release 201802271230 false desc"
+  exit -1
+fi
+
 #检查是否已经保存过git的账户与密码
 git ls-remote > /dev/null
 if [[ $? != 0 ]]; then
@@ -41,20 +61,6 @@ fi
 #  exit -1
 #fi
 
-branchVersion=$1
-newDate=$2
-#Whether or not to tag this branch version: "false": don't tag "yes": tag
-needTag=$3
-desc=$4
-desc=${desc//\"/}
-
-if [[ "$branchVersion" == "" || "$newDate" == "" ]]; then
-  # echo "branchVersion must be not empty!"
-  echo "Usage: $0 BranchVersion newTagDate needTag desc"
-  echo "$0 1.0.0.release 201802271230 false desc"
-  exit -1
-fi
-
 newTag=${branchVersion}-${newDate}
 
 function SwitchBranch() {
@@ -65,11 +71,11 @@ function SwitchBranch() {
     if [[ $? != 0 ]]; then
         git checkout ${branchVersions} > /dev/null
         if [[ $? != 0 ]]; then
-            echo "Switching branch to ${branchVersions} error."
+            echo "Switched branch to ${branchVersions} error."
             exit -1
         fi
     fi
-    echo "Switching branch to ${branchVersions} successfully."
+    echo "Switched branch to ${branchVersions} successfully."
     # git branch
 }
 
@@ -82,10 +88,10 @@ function Push() {
     git commit -m "${desc}"
     git push origin ${branchVersions}
     if [[ $? != 0 ]]; then
-        echo "Pushing ${branchVersions} error."
+        echo "Pushed ${branchVersions} error."
         exit -1
     fi
-    echo "Pushing ${branchVersions} successfully."
+    echo "Pushed ${branchVersions} successfully."
 }
 
 function Tag() {
@@ -95,10 +101,10 @@ function Tag() {
     fi
     git tag -a $newTag -m "${desc}"
     if [[ $? != 0 ]]; then
-      echo "Tagging error!"
+      echo "Tagged error!"
       exit -1
     else
-      echo "Tagging to ${newTag} successfully!"
+      echo "Tagged to ${newTag} successfully!"
       git push origin ${newTag}
     fi
 }
@@ -119,7 +125,7 @@ function deleteUnusedReleaseBranch() {
         git branch -d $deleteBranch &> /dev/null
         git push origin --delete $deleteBranch &> /dev/null
     done
-    echo "Keep only the last ${reserveVersionNumber} ${type} versions!"
+    echo "Only save ${reserveVersionNumber} ${type} versions!"
 }
 
 function deleteUnusedTags() {
@@ -135,21 +141,33 @@ function deleteUnusedTags() {
     git push origin :refs/tags/$tag
     # echo "Tag $tag has beed deleted..."
   done
-  echo "Keep only the last ${reserveVersionNumber} tags!"
+  echo "Only save ${reserveVersionNumber} tags!"
 }
 
 function changeReleaseVersion() {
   #change version
   mvnVersion=$1
   mvn versions:set -DnewVersion=${mvnVersion}
-  mvn versions:commit
+  if [[ $? == 0 ]]; then
+    mvn versions:commit
+  else
+    mvn versions:revert
+    echo "Changed version failed, please check!"
+    exit -1
+  fi
 }
 
 function changeNextVersion() {
   #change version
   nextVersion=$1
   mvn versions:set -DnewVersion=${nextVersion}
-  mvn versions:commit
+  if [[ $? == 0 ]]; then
+    mvn versions:commit
+  else
+    mvn versions:revert
+    echo "Changed version failed, please check!"
+    exit -1
+  fi
 }
 
 function updateVersionRecord() {
@@ -173,11 +191,11 @@ echo "branchVersion--------${branchVersion}"
 echo "currentBranchVersion--------${currentBranchVersion}"
 SwitchBranch $branchVersion
 
-changeReleaseVersion $releaseVersion &> /dev/null
+changeReleaseVersion $releaseVersion > /dev/null
+updateVersionRecord $releaseVersion
 if [[ -f "deploy.sh" ]]; then
   bash deploy.sh changeVersion $releaseVersion
 fi
-updateVersionRecord $releaseVersion
 
 # deploy
 if [[ -f "deploy.sh" ]]; then
@@ -193,7 +211,7 @@ if [[ "$needTag" == "true" ]]; then
   Tag $newTag
 fi
 git checkout $currentBranchVersion
-changeNextVersion $nextDevelopVersion &> /dev/null
+changeNextVersion $nextDevelopVersion > /dev/null
 if [[ -f "deploy.sh" ]]; then
   bash deploy.sh changeVersion $nextDevelopVersion
 fi

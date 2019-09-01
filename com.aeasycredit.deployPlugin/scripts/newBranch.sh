@@ -13,6 +13,23 @@ sedi() {
 # script replace, don't delete.
 #cd #{project}
 
+NEW_BRANCH=$1
+desc=$2
+
+if [[ "$desc" == "" ]]; then
+  echo "Please add a message for git!"
+  exit -1
+fi
+
+desc=${desc//\"/}
+
+if [[ "$NEW_BRANCH" == "" || ($NEW_BRANCH != *.x) ]]; then
+  # echo "branchVersion must be not empty!"
+  echo "Usage: $0 branch"
+  echo "$0 1.0.x"
+  exit -1
+fi
+
 #检查是否已经保存过git的账户与密码
 git ls-remote > /dev/null
 if [[ $? != 0 ]]; then
@@ -43,17 +60,6 @@ fi
 #  exit -1
 #fi
 
-NEW_BRANCH=$1
-desc=$2
-desc=${desc//\"/}
-
-if [[ "$NEW_BRANCH" == "" || ($NEW_BRANCH != *.x) ]]; then
-  # echo "branchVersion must be not empty!"
-  echo "Usage: $0 branch"
-  echo "$0 1.0.x"
-  exit -1
-fi
-
 function SwitchBranch() {
     branchVersions=$1
     #git add .
@@ -62,11 +68,11 @@ function SwitchBranch() {
     if [[ $? != 0 ]]; then
         git checkout ${branchVersions} > /dev/null
         if [[ $? != 0 ]]; then
-            echo "Switch branch to ${branchVersions} error."
+            echo "Switched branch to ${branchVersions} error."
             exit -1
         fi
     fi
-    echo "Switch branch to ${branchVersions} successfully."
+    echo "Switched branch to ${branchVersions} successfully."
     # git branch
 }
 
@@ -79,17 +85,23 @@ function Push() {
     git commit -m "${desc}"
     git push origin ${branchVersions}
     if [[ $? != 0 ]]; then
-        echo "Push ${branchVersions} error."
+        echo "Pushed ${branchVersions} error."
         exit -1
     fi
-    echo "Push ${branchVersions} successfully."
+    echo "Pushed ${branchVersions} successfully."
 }
 
 function changeNextVersion() {
   #change version
   nextVersion=$1
   mvn versions:set -DnewVersion=${nextVersion}
-  mvn versions:commit
+  if [[ $? == 0 ]]; then
+    mvn versions:commit
+  else
+    mvn versions:revert
+    echo "Changed version failed, please check!"
+    exit -1
+  fi
 }
 
 SwitchBranch $NEW_BRANCH
@@ -97,7 +109,7 @@ SwitchBranch $NEW_BRANCH
 #change version
 arr=(${NEW_BRANCH//./ })
 mvnVersion=${arr[0]}.${arr[1]}.0-SNAPSHOT
-changeNextVersion $mvnVersion &> /dev/null
+changeNextVersion $mvnVersion > /dev/null
 if [[ -f "deploy.sh" ]]; then
   bash deploy.sh changeVersion $mvnVersion
 fi
