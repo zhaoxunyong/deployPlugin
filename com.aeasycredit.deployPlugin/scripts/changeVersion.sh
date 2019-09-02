@@ -14,14 +14,18 @@ sedi() {
 #cd #{project}
 
 NEW_VERSION=$1
-mvn versions:set -DnewVersion=${NEW_VERSION}
+ls pom.xml &>/dev/null
 if [[ $? == 0 ]]; then
-  mvn versions:commit
-else
-  mvn versions:revert
-  echo "Changed version failed, please check!"
-  exit -1
+  mvn versions:set -DnewVersion=${NEW_VERSION}
+  if [[ $? == 0 ]]; then
+    mvn versions:commit
+  else
+    mvn versions:revert
+    echo "Changed version failed, please check!"
+    exit -1
+  fi
 fi
+
 if [[ -f "deploy.sh" ]]; then
   bash deploy.sh changeVersion $NEW_VERSION
 fi

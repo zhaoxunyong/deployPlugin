@@ -328,20 +328,26 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         	String b1 = currentBranchs[0];
         	String b2 = currentBranchs[1];
         	version = getRemoteVersion(results).replaceAll("\\.(release|hotfix)$", "");
-        	String[] currentReleases = version.split("[.]");
-        	if (currentReleases.length >= 3) {
-                String p1 = currentReleases[0];
-                String p2 = currentReleases[1];
-                String p3 = currentReleases[2];
-                String compareBranch = b1 + b2;
-                String compareTag = p1 + p2;
-                if (!compareBranch.equals(compareTag)) {
-                	version = b1 + "." + b2 + ".0";
-                } else {
-                    int nextP3 = Integer.parseInt(p3) + 1;
-                    version = p1 + '.' + p2 + '.' + nextP3;
+        	if(StringUtils.isBlank(version)) {
+        		// Not found the lastest release version, using the current branch instead
+        		version = b1+"."+b2+".0";
+        	} else {
+            	String[] currentReleases = version.split("[.]");
+            	if (currentReleases.length >= 3) {
+                    String p1 = currentReleases[0];
+                    String p2 = currentReleases[1];
+                    String p3 = currentReleases[2];
+                    String compareBranch = b1 + b2;
+                    String compareTag = p1 + p2;
+                    if (!compareBranch.equals(compareTag)) {
+                    	version = b1 + "." + b2 + ".0";
+                    } else {
+                        int nextP3 = Integer.parseInt(p3) + 1;
+                        version = p1 + '.' + p2 + '.' + nextP3;
+                    }
                 }
-            }
+        		
+        	}
         }
         return version;
     }
@@ -704,6 +710,8 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 				                }
 			                }
 			            }
+		        	} else {
+		        		MessageDialog.openError(shell, name, "Neither the release nor the hotfix version has been found!");
 		        	}
 		        	
 		        }

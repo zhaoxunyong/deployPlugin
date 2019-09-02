@@ -94,13 +94,16 @@ function Push() {
 function changeNextVersion() {
   #change version
   nextVersion=$1
-  mvn versions:set -DnewVersion=${nextVersion}
+  ls pom.xml &>/dev/null
   if [[ $? == 0 ]]; then
-    mvn versions:commit
-  else
-    mvn versions:revert
-    echo "Changed version failed, please check!"
-    exit -1
+    mvn versions:set -DnewVersion=${nextVersion}
+    if [[ $? == 0 ]]; then
+      mvn versions:commit
+    else
+      mvn versions:revert
+      echo "Changed version failed, please check!"
+      exit -1
+    fi
   fi
 }
 
