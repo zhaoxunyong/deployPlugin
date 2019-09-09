@@ -146,25 +146,28 @@ public class DeployPluginHelper {
             }
         } else {
     		cmdLine = new CommandLine("bash");
-            if(StringUtils.isNotBlank(debugStr)) {
-                cmdLine.addArgument(debugStr);
-            }
         	// For Unix
         	if(isBatchScript) {
             	// Batch script
+                if(StringUtils.isNotBlank(debugStr)) {
+                    cmdLine.addArgument(debugStr);
+                }
                 cmdLine.addArgument(command);
                 if(parameters!=null && !parameters.isEmpty()) {
                 	for(String p : parameters) {
-                		cmdLine.addArgument(p);
+                		if(StringUtils.isNotBlank(p)) {
+                    		cmdLine.addArgument(p);
+                		}
                 	}
                 }
         	} else {
             	// single script
-//        		  cmdLine = new CommandLine(command);
+//        		cmdLine = new CommandLine(command);
 //                if(parameters!=null && !parameters.isEmpty()) {
 //                	for(String p : parameters) {
-//                		cmdLine.addArgument(p);
-//                	}
+//        			if(StringUtils.isNotBlank(p)) {
+//        				cmdLine.addArgument(p);
+//        			}
 //                }
         		
         		// Supported using pipe in commands: can't contain "quotation mark"(双引号) in pipe
