@@ -148,7 +148,7 @@ public class DeployPluginHelper {
 //                cmdLine.addArgument("-c");
 //                cmdLine.addArgument("\""+command+" "+params+"\"");
             	
-            	// Supported using pipe in commands
+            	// Supported using pipe in commands: can't contain "quotation mark"(双引号) in pipe 
         		String params = Joiner.on(" ").join(parameters);
         		String myActualCommand = command+" "+params;
 //        		cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe").addArgument("-c");
@@ -179,7 +179,7 @@ public class DeployPluginHelper {
 //                	}
 //                }
         		
-        		// Supported using pipe in commands
+        		// Supported using pipe in commands: can't contain "quotation mark"(双引号) in pipe
         		String params = Joiner.on(" ").join(parameters);
         		String myActualCommand = command+" "+params;
         		cmdLine.addArgument("-c");
@@ -259,7 +259,7 @@ public class DeployPluginHelper {
     	
     	String workHome = "/Developer/workspace/config-server";
     	
-    	String command = "git ls-remote | grep -v \"\\^{}\" |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i \"(release|hotfix)$\" | sed -n '1p'";
+    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$' | sed -n '1p'";
     	List<String> params = Lists.newArrayList("");
     	String output = DeployPluginHelper.exec(true, null, workHome, command, params, false);
     	
