@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecuteResultHandler;
 import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.LogOutputStream;
@@ -197,28 +196,35 @@ public class DeployPluginHelper {
         return out;
     }
     
-    
-    public static void main(String[] args) throws IOException, InterruptedException {
-        String line = "cmd.exe /C deploy.bat";
+    public static void main(String[] args) throws Exception {
+    	/*Process process = Runtime.getRuntime().exec(new String[]{"C:\\Program Files\\Git\\bin\\bash.exe","-c","whoami|grep dave"}); 
+    	StringBuffer cmdout = new StringBuffer(); 
+    	InputStream fis = process.getInputStream(); 
+        BufferedReader br = new BufferedReader(new InputStreamReader(fis)); 
+        String line = null; 
+        while ((line = br.readLine()) != null) { 
+            cmdout.append(line).append(System.getProperty("line.separator")); 
+        } 
+        System.out.println(cmdout);*/
         
-        CommandLine cmdLine = CommandLine.parse(line);
-        Executor executor = new DefaultExecutor();
-        
-        executor.setStreamHandler(new PumpStreamHandler(new LogOutputStream() {
+        String myActualCommand = 
+        	    "ipconfig | grep '255.255.255.240'"; 
 
-            @Override
-            protected void processLine(String line, int level) {
-                System.out.println(line);
-            }
-        }));
-        
-        DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
-        
-        executor.setWorkingDirectory(new File("D:\\works"));
-        executor.execute(cmdLine, resultHandler);
-        System.out.println("exitValue===");
-        resultHandler.waitFor();
-        
-        
+    	// able to execute arbitrary shell command sequence 
+    	CommandLine shellCommand = new CommandLine("C:\\Program Files\\Git\\bin\\bash.exe").addArgument("-c"); 
+
+    	// set handleQuoting = false so our command is taken as it is 
+    	shellCommand.addArgument(myActualCommand, false); 
+
+    	Executor exec = new DefaultExecutor(); 
+    	// ... (configure the executor as you like, e.g. with watchdog and stream handler) 
+
+    	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+        PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream,errorStream);
+        exec.setStreamHandler(streamHandler);
+    	exec.execute(shellCommand); 
+    	String out = outputStream.toString("utf-8");
+        System.out.println(out);
     }
 }
