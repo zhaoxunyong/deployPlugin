@@ -34,9 +34,8 @@ public class ChangeVersionHandler extends AbstractDeployPluginHandler {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         this.shell = window.getShell();
         this.selection = window.getSelectionService().getSelection();
-        clearConsole();
         try {
-            this.setProject(project());
+        	this.init();
 			changeVersion(event);
 		} catch (Exception e) {
 //			MessageDialog.openError(shell, "change version error", e.getMessage());

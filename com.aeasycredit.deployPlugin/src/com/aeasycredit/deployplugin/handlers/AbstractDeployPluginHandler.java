@@ -15,7 +15,6 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.internal.resources.Project;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -51,7 +50,6 @@ import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.aeasycredit.deployplugin.utils.BASE64Utils;
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
-import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 
 /**
@@ -93,56 +91,49 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         this.console = DeployPluginHelper.console(true);
     }
     
-    public IProject getProject() {
-        return project;
-    }
-
-    public void setProject(IProject project) {
-        this.project = project;
-    }
+//    public IProject getProject() {
+//        return project;
+//    }
 
     @SuppressWarnings("rawtypes")
-    protected IProject project() throws Exception {
+    protected void init() throws Exception {
+    	clearConsole();
 //      String name = "windows start";
         IProject project = null;
-//      try {
-            if (selection.isEmpty() || selection instanceof TextSelection) {
+        if (selection.isEmpty() || selection instanceof TextSelection) {
 //              MessageDialog.openError(shell, name, "No project or package selected.");
-                throw new Exception("No project or package selected.");
-            } else {
-                if (selection instanceof TreeSelection) {
-                    TreeSelection ts = (TreeSelection) selection;
-                    if (!ts.isEmpty()) {
-                        Iterator iterator = ts.iterator();
-                        while (iterator.hasNext()) {
-                            Object itObj = iterator.next();
-                            if (itObj instanceof Project) {
-                                Project prj = (Project) itObj;
-                                project = prj.getProject();
-                                break;
-                            } else if (itObj instanceof JavaProject) {
-                                JavaProject jproject = (JavaProject) itObj;
-                                project = jproject.getProject();
-                                break;
-                            } else if (itObj instanceof PackageFragment) {
-                                PackageFragment packageFragment = (PackageFragment) itObj;
-                                IJavaProject jproject = packageFragment.getJavaProject();
-                                project = jproject.getProject();
-                                break;
-                            }
+            throw new Exception("No project or package selected.");
+        } else {
+            if (selection instanceof TreeSelection) {
+                TreeSelection ts = (TreeSelection) selection;
+                if (!ts.isEmpty()) {
+                    Iterator iterator = ts.iterator();
+                    while (iterator.hasNext()) {
+                        Object itObj = iterator.next();
+                        if (itObj instanceof Project) {
+                            Project prj = (Project) itObj;
+                            project = prj.getProject();
+                            break;
+                        } else if (itObj instanceof JavaProject) {
+                            JavaProject jproject = (JavaProject) itObj;
+                            project = jproject.getProject();
+                            break;
+                        } else if (itObj instanceof PackageFragment) {
+                            PackageFragment packageFragment = (PackageFragment) itObj;
+                            IJavaProject jproject = packageFragment.getJavaProject();
+                            project = jproject.getProject();
+                            break;
                         }
-
                     }
+
                 }
             }
-            if (project == null) {
-                throw new Exception("No project or package selected.");
-            }
-            return project;
-//      } catch (Exception e) {
-//          e.printStackTrace();
-//          MessageDialog.openError(shell, name, e.getMessage());
-//      }
+        }
+        if (project == null) {
+            throw new Exception("No project or package selected.");
+        }
+        this.project = project;
+//            return project;
     }
     
     /*private void credentialHelper() throws Exception {
@@ -175,7 +166,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
     }
 
-    public void clearConsole() {
+    private void clearConsole() {
         MessageConsole cs = DeployPluginHelper.findConsole();
         cs.clearConsole();
         cs.activate();

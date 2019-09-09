@@ -34,9 +34,8 @@ public class MybatisGenHandler extends AbstractDeployPluginHandler {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         this.shell = window.getShell();
         this.selection = window.getSelectionService().getSelection();
-        clearConsole();
         try {
-            this.setProject(project());
+        	this.init();
             mybatisGen(event);
 		} catch (Exception e) {
 //			MessageDialog.openError(shell, "release error", e.getMessage());

@@ -34,9 +34,8 @@ public class ReleaseHandler extends AbstractDeployPluginHandler {
         IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindowChecked(event);
         this.shell = window.getShell();
         this.selection = window.getSelectionService().getSelection();
-        clearConsole();
         try {
-            this.setProject(project());
+        	this.init();
             release(event);
 		} catch (Exception e) {
 //			MessageDialog.openError(shell, "release error", e.getMessage());
