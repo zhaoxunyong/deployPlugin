@@ -22,6 +22,7 @@ import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 /**
  * DeployPluginHelper
@@ -88,6 +89,11 @@ public class DeployPluginHelper {
     public static String exec(String workHome, String command, List<String> params, boolean isBatchScript) throws InterruptedException, IOException {
         return exec(null, workHome, command, params, isBatchScript);
     }
+    
+    public static String exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
+    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
+    	return exec(debug, console, workHome, command, parameters, isBatchScript);
+    }
 
     /** 
      * 只支持sh脚本执行，如果是具体的命令的话，请使用CmdExecutor类执行
@@ -106,11 +112,11 @@ public class DeployPluginHelper {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static String exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
+    public static String exec(boolean debug, final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
 //        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
 //        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
 //        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
-    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
+//    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
     	String debugStr = debug?"-x":"";
     	// console.setEncoding("utf-8");
     	/*String shell = "";
@@ -123,11 +129,13 @@ public class DeployPluginHelper {
         
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
+        	// For windows
         	cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe");
             if(StringUtils.isNotBlank(debugStr)) {
                 cmdLine.addArgument(debugStr);
             }
             if(isBatchScript) {
+            	// Batch script
         		cmdLine.addArgument(command);
                 if(parameters!=null && !parameters.isEmpty()) {
                 	for(String p : parameters) {
@@ -135,25 +143,49 @@ public class DeployPluginHelper {
                 	}
                 }
             } else {
-            	String params = Joiner.on(" ").join(parameters);
-                cmdLine.addArgument("-c");
-                cmdLine.addArgument("\""+command+" "+params+"\"");
+            	// single script
+//            	String params = Joiner.on(" ").join(parameters);
+//                cmdLine.addArgument("-c");
+//                cmdLine.addArgument("\""+command+" "+params+"\"");
+            	
+            	// Supported using pipe in commands
+        		String params = Joiner.on(" ").join(parameters);
+        		String myActualCommand = command+" "+params;
+//        		cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe").addArgument("-c");
+        		cmdLine.addArgument("-c");
+            	// set handleQuoting = false so our command is taken as it is 
+        		cmdLine.addArgument(myActualCommand, false); 
             }
         } else {
-        	if(isBatchScript) {
-        		cmdLine = new CommandLine("bash");
-                if(StringUtils.isNotBlank(debugStr)) {
-                    cmdLine.addArgument(debugStr);
-                }
-                cmdLine.addArgument(command);
-        	} else {
-        		cmdLine = new CommandLine(command);
-        	}
-            if(parameters!=null && !parameters.isEmpty()) {
-            	for(String p : parameters) {
-            		cmdLine.addArgument(p);
-            	}
+    		cmdLine = new CommandLine("bash");
+            if(StringUtils.isNotBlank(debugStr)) {
+                cmdLine.addArgument(debugStr);
             }
+        	// For Unix
+        	if(isBatchScript) {
+            	// Batch script
+                cmdLine.addArgument(command);
+                if(parameters!=null && !parameters.isEmpty()) {
+                	for(String p : parameters) {
+                		cmdLine.addArgument(p);
+                	}
+                }
+        	} else {
+            	// single script
+//        		  cmdLine = new CommandLine(command);
+//                if(parameters!=null && !parameters.isEmpty()) {
+//                	for(String p : parameters) {
+//                		cmdLine.addArgument(p);
+//                	}
+//                }
+        		
+        		// Supported using pipe in commands
+        		String params = Joiner.on(" ").join(parameters);
+        		String myActualCommand = command+" "+params;
+        		cmdLine.addArgument("-c");
+            	// set handleQuoting = false so our command is taken as it is 
+        		cmdLine.addArgument(myActualCommand, false); 
+        	}
         }
         
         // CommandLine cmdLine = CommandLine.parse(shell);
@@ -207,11 +239,9 @@ public class DeployPluginHelper {
         } 
         System.out.println(cmdout);*/
         
-        String myActualCommand = 
-        	    "ipconfig | grep '255.255.255.240'"; 
-
+        /*String myActualCommand = "whoami|grep dave"; 
     	// able to execute arbitrary shell command sequence 
-    	CommandLine shellCommand = new CommandLine("C:\\Program Files\\Git\\bin\\bash.exe").addArgument("-c"); 
+    	CommandLine shellCommand = new CommandLine("bash").addArgument("-c"); 
 
     	// set handleQuoting = false so our command is taken as it is 
     	shellCommand.addArgument(myActualCommand, false); 
@@ -225,6 +255,19 @@ public class DeployPluginHelper {
         exec.setStreamHandler(streamHandler);
     	exec.execute(shellCommand); 
     	String out = outputStream.toString("utf-8");
-        System.out.println(out);
+        System.out.println(out);*/
+    	
+    	String workHome = "/Developer/workspace/config-server";
+    	
+    	String command = "git ls-remote | grep -v \"\\^{}\" |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i \"(release|hotfix)$\" | sed -n '1p'";
+    	List<String> params = Lists.newArrayList("");
+    	String output = DeployPluginHelper.exec(true, null, workHome, command, params, false);
+    	
+
+//    	String command = "test.sh";
+//    	List<String> params = Lists.newArrayList("");
+//    	String output = DeployPluginHelper.exec(true, null, workHome, command, params, true);
+    	
+    	System.out.println(output);
     }
 }

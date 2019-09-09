@@ -246,7 +246,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     private String[] lsRemote(String rootProjectPath) throws Exception {
     	String command = "git";
         List<String> parameters = Lists.newArrayList("ls-remote");
-        String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+//    	String command = "git ls-remote | grep -v \"\\^{}\" |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i \"(release|hotfix)$\"";
+//      List<String> parameters = Lists.newArrayList();
+    	String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
         // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
 //	        System.out.println("result----->"+result);
         if(!"".equals(result)) {
