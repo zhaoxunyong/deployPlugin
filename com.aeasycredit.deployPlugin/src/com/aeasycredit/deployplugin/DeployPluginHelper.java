@@ -113,29 +113,17 @@ public class DeployPluginHelper {
      * @author Dave.zhao
      */
     public static String exec(boolean debug, final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
-//        CommandLine cmdLine = CommandLine.parse("cmd.exe /C "+command +" "+ params);
-//        cmd.exe /c ""D:\Developer\Git\bin\sh.exe" --login -i -c "wget http://gitlab.aeasycredit.net/dave.zhao/codecheck/raw/master/scripts/merge.sh""
-//        String shell = "cmd.exe /c \"\"%GIT_HOME%\\bin\\sh.exe\" --login -i -- "+command+" "+params+"\"";
-//    	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
     	String debugStr = debug?"-x":"";
-    	// console.setEncoding("utf-8");
-    	/*String shell = "";
-    	String params = Joiner.on(" ").join(parameters);
-        if(SystemUtils.IS_OS_WINDOWS) {
-            shell = "\""+FileHandlerUtils.getGitHome()+"\\bin\\bash.exe\" --login -i -c \""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params+"\"";
-        } else {
-            shell = ""+(isBatchCommand?"":"bash "+debugStr)+" "+command+" "+params;
-        }*/
         
         CommandLine cmdLine = null;
         if(SystemUtils.IS_OS_WINDOWS) {
         	// For windows
         	cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe");
-            if(StringUtils.isNotBlank(debugStr)) {
-                cmdLine.addArgument(debugStr);
-            }
             if(isBatchScript) {
             	// Batch script
+                if(StringUtils.isNotBlank(debugStr)) {
+                    cmdLine.addArgument(debugStr);
+                }
         		cmdLine.addArgument(command);
                 if(parameters!=null && !parameters.isEmpty()) {
                 	for(String p : parameters) {
