@@ -136,14 +136,16 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         }
         this.project = project;
         
+        ExecuteResult result = null;
         try {
-            ExecuteResult result = this.gitCheck();
-            if(result.getCode() != 0) {
-//            	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
-            	throw new Exception(result.getResult());
-            }
+            result = this.gitCheck();
         } catch (Exception e) {
+        	// Skipping check when the gitCheck.sh isn't existing
         	System.err.println(e);
+        }
+        if(result != null && result.getCode() != 0) {
+//        	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
+        	throw new Exception(result.getResult());
         }
     }
     
