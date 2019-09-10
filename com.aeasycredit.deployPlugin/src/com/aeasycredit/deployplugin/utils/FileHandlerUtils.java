@@ -98,7 +98,7 @@ public final class FileHandlerUtils {
 //            }
 //            return tempFolder;
 //        }
-    	File file = new File(System.getProperty("java.io.tmpdir")+File.separator+"eclipse");
+    	File file = new File(System.getProperty("java.io.tmpdir"));
     	if(!file.exists()) {
     		file.mkdirs();
     	}

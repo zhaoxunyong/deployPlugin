@@ -49,6 +49,7 @@ import com.aeasycredit.deployplugin.jobs.ClientJob;
 import com.aeasycredit.deployplugin.jobs.CompletionAction;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.aeasycredit.deployplugin.utils.BASE64Utils;
+import com.aeasycredit.deployplugin.utils.ExecuteResult;
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
 import com.google.common.collect.Lists;
 
@@ -78,6 +79,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected final static String RELEASE_BAT = "./release.sh";
     protected final static String NEWBRANCH_BAT = "./newBranch.sh";
     protected final static String TAG_BAT = "./tag.sh";
+    protected final static String GITCHECK_BAT = "./gitCheck.sh";
     
     @Deprecated
     protected final static String MERGE_BAT = "./merge.sh";
@@ -133,7 +135,12 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
             throw new Exception("No project or package selected.");
         }
         this.project = project;
-//            return project;
+        
+        ExecuteResult result = this.gitCheck();
+        if(result.getCode() != 0) {
+//        	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
+        	throw new Exception(result.getResult());
+        }
     }
     
     /*private void credentialHelper() throws Exception {
@@ -243,15 +250,49 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     	return 0;
     }
     
+    /*private boolean gitAdd() throws Exception {
+        String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+    	String command = "git status|grep 'git add'";
+        List<String> parameters = Lists.newArrayList();
+//    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$'";
+//      List<String> parameters = Lists.newArrayList();
+        ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+        int code = executeResult.getCode();
+        return code != 0;
+    }*/
+    
+    private ExecuteResult gitCheck() throws Exception {
+        /*String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+    	String command = "git remote show origin|grep `git branch|grep '*' | awk '{print $NF}'` | egrep '本地已过时|local out of date'";
+        List<String> parameters = Lists.newArrayList();
+//    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$'";
+//      List<String> parameters = Lists.newArrayList();
+        ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+        int code = executeResult.getCode();
+        return code != 0;*/
+    	String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+    	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, GITCHECK_BAT);
+//    	String projectName = project.getLocation().toFile().getName();
+//    	String tempProjectFolder = FileHandlerUtils.getTempFolder()+"/"+projectName;
+    	List<String> params = Lists.newArrayList();
+    	ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, cmdFile, params, true);
+        return executeResult;
+    }
+    
     private String[] lsRemote(String rootProjectPath) throws Exception {
     	String command = "git";
         List<String> parameters = Lists.newArrayList("ls-remote");
 //    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$'";
 //      List<String> parameters = Lists.newArrayList();
-    	String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+        ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
         // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
 //	        System.out.println("result----->"+result);
-        if(!"".equals(result)) {
+        int code = executeResult.getCode();
+        String result = executeResult.getResult();
+        if(code == 0 && !"".equals(result)) {
         	return result.split("[\n|\r\n]");
         }
         return null;
@@ -567,10 +608,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         } else {
             String command = "git";
             List<String> parameters = Lists.newArrayList("ls-remote");
-            String result = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
-            // String result = CmdExecutor.exec(rootProjectPath, command, parameters);
-//    	        System.out.println("result----->"+result);
-            if(!"".equals(result)) {
+            ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, command, parameters, false);
+            int code = executeResult.getCode();
+            String result = executeResult.getResult();
+            if(code == 0 && !"".equals(result)) {
             	String[] results = result.split("[\n|\r\n]");
             	for(String r : results) {
             		if(r.endsWith(".release") || r.endsWith(".hotfix")) {

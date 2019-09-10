@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.progress.IProgressConstants;
 
 import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
+import com.aeasycredit.deployplugin.utils.ExecuteResult;
 import com.aeasycredit.deployplugin.CmdBuilder;
 import com.aeasycredit.deployplugin.DeployPluginHelper;
 
@@ -58,8 +59,8 @@ public class ClientJob extends Job {
             boolean ok = true;
             if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
                 for (CmdBuilder cmdBuilder : cmdBuilders) {
-                    String runOk = DeployPluginHelper.exec(completionAction.getConsole(), cmdBuilder.getWorkHome(), cmdBuilder.getCommand(), cmdBuilder.getParams(), cmdBuilder.isBatchScript());
-                    if (!"0".equals(runOk)) {
+                	ExecuteResult executeResult = DeployPluginHelper.exec(completionAction.getConsole(), cmdBuilder.getWorkHome(), cmdBuilder.getCommand(), cmdBuilder.getParams(), cmdBuilder.isBatchScript());
+                    if (executeResult.getCode() != 0) {
                         ok = false;
                         break;
                     }

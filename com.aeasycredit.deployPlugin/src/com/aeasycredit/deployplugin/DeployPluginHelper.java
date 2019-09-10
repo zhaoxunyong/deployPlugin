@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.commons.exec.CommandLine;
 import org.apache.commons.exec.DefaultExecutor;
+import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.exec.PumpStreamHandler;
@@ -20,6 +21,7 @@ import org.eclipse.ui.console.IConsoleManager;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import com.aeasycredit.deployplugin.utils.ExecuteResult;
 import com.aeasycredit.deployplugin.utils.FileHandlerUtils;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
@@ -86,11 +88,11 @@ public class DeployPluginHelper {
     }
     
 
-    public static String exec(String workHome, String command, List<String> params, boolean isBatchScript) throws InterruptedException, IOException {
+    public static ExecuteResult exec(String workHome, String command, List<String> params, boolean isBatchScript) throws InterruptedException, IOException {
         return exec(null, workHome, command, params, isBatchScript);
     }
     
-    public static String exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
+    public static ExecuteResult exec(final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
     	boolean debug = DeployPluginLauncherPlugin.getGitBashDebug();
     	return exec(debug, console, workHome, command, parameters, isBatchScript);
     }
@@ -112,7 +114,7 @@ public class DeployPluginHelper {
      * @version [版本号, 2018年5月3日]
      * @author Dave.zhao
      */
-    public static String exec(boolean debug, final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
+    public static ExecuteResult exec(boolean debug, final MessageConsoleStream console, String workHome, String command, List<String> parameters, boolean isBatchScript) throws IOException, InterruptedException {
     	String debugStr = debug?"-x":"";
         
         CommandLine cmdLine = null;
@@ -137,7 +139,7 @@ public class DeployPluginHelper {
 //                cmdLine.addArgument("\""+command+" "+params+"\"");
             	
             	// Supported using pipe in commands: can't contain "quotation mark"(双引号) in pipe 
-        		String params = Joiner.on(" ").join(parameters);
+        		String params = parameters == null ? "" : Joiner.on(" ").join(parameters);
         		String myActualCommand = command+" "+params;
 //        		cmdLine = new CommandLine(FileHandlerUtils.getGitHome()+"\\bin\\bash.exe").addArgument("-c");
         		cmdLine.addArgument("-c");
@@ -171,8 +173,11 @@ public class DeployPluginHelper {
 //                }
         		
         		// Supported using pipe in commands: can't contain "quotation mark"(双引号) in pipe
-        		String params = Joiner.on(" ").join(parameters);
-        		String myActualCommand = command+" "+params;
+        		String myActualCommand = command;
+        		if(parameters!=null && !parameters.isEmpty()) {
+            		String params = Joiner.on(" ").join(parameters);
+        			myActualCommand += " "+params;
+        		}
         		cmdLine.addArgument("-c");
             	// set handleQuoting = false so our command is taken as it is 
         		cmdLine.addArgument(myActualCommand, false); 
@@ -182,7 +187,16 @@ public class DeployPluginHelper {
         // CommandLine cmdLine = CommandLine.parse(shell);
         Executor executor = new DefaultExecutor();
         executor.setWorkingDirectory(new File(workHome));
-        String out = "";
+        // Ignore all error code
+        int successSartCode = 0;
+        int sucessEndCode = 255;
+        int[] codes = new int[sucessEndCode-successSartCode+1];
+        for(int i=successSartCode;i<=sucessEndCode;i++) {
+        	codes[i] = i;
+        }
+    	executor.setExitValues(codes);
+//        String out = "";
+        ExecuteResult executeResult;
         if(console!=null) {
             executor.setStreamHandler(new PumpStreamHandler(new LogOutputStream() {
 
@@ -198,25 +212,27 @@ public class DeployPluginHelper {
                 }
             }));
             
-            int code = executor.execute(cmdLine);
-            /*if(asyc){
-                  DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
-                  executor.execute(cmdLine, resultHandler);
-//                  resultHandler.waitFor();
-                }*/
-            out = String.valueOf(code);
-            // return code == 0 ? true:false;
+//            int code = executor.execute(cmdLine);
+            try {
+            	executor.execute(cmdLine);
+                executeResult = new ExecuteResult(0, "0");
+            }catch(ExecuteException e) {
+                executeResult = new ExecuteResult(1, e.getMessage());
+            }
         } else {
         	// return the output
         	ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
             PumpStreamHandler streamHandler = new PumpStreamHandler(outputStream,errorStream);
             executor.setStreamHandler(streamHandler);
-            executor.execute(cmdLine);
-            out = outputStream.toString("utf-8");
-        	
+            try {
+            	int code = executor.execute(cmdLine);
+                executeResult = new ExecuteResult(code, outputStream.toString("utf-8"));
+            }catch(ExecuteException e) {
+                executeResult = new ExecuteResult(-1, e.getMessage());
+            }
         }
-        return out;
+        return executeResult;
     }
     
     public static void main(String[] args) throws Exception {
@@ -250,15 +266,16 @@ public class DeployPluginHelper {
     	
     	String workHome = "/Developer/workspace/config-server";
     	
-    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$' | sed -n '1p'";
+    	String command = "git remote show origin|grep 1.18.2.hotfix | egrep '本地已过时|local out of date'";
     	List<String> params = Lists.newArrayList("");
-    	String output = DeployPluginHelper.exec(true, null, workHome, command, params, false);
+        ExecuteResult executeResult = DeployPluginHelper.exec(true, null, workHome, command, params, false);
     	
 
 //    	String command = "test.sh";
 //    	List<String> params = Lists.newArrayList("");
 //    	String output = DeployPluginHelper.exec(true, null, workHome, command, params, true);
     	
-    	System.out.println(output);
+    	System.out.println(executeResult.getCode());
+    	System.out.println(executeResult.getResult());
     }
 }
