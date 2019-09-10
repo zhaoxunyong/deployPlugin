@@ -62,12 +62,13 @@ public class ClientJob extends Job {
                 	ExecuteResult executeResult = DeployPluginHelper.exec(completionAction.getConsole(), cmdBuilder.getWorkHome(), cmdBuilder.getCommand(), cmdBuilder.getParams(), cmdBuilder.isBatchScript());
                     if (executeResult.getCode() != 0) {
                         ok = false;
-                        break;
+                        throw new Exception("Command Execute Failed: "+executeResult.getResult());
+//                        break;
                     }
                 }
             }
             completionAction.setOk(ok);
-            completionAction.getConsole().print(this.getName()+" OK.");
+            completionAction.getConsole().print(this.getName()+(ok?" OK.":" ERROR."));
             // refresh workspace
             completionAction.getRefreshable().refresh();
             status = Status.OK_STATUS;

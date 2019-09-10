@@ -214,10 +214,10 @@ public class DeployPluginHelper {
             
 //            int code = executor.execute(cmdLine);
             try {
-            	executor.execute(cmdLine);
-                executeResult = new ExecuteResult(0, "0");
+            	int code = executor.execute(cmdLine);
+                executeResult = new ExecuteResult(code, ""+code);
             }catch(ExecuteException e) {
-                executeResult = new ExecuteResult(1, e.getMessage());
+                executeResult = new ExecuteResult(-1, e.getMessage());
             }
         } else {
         	// return the output
