@@ -506,12 +506,12 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         List<CmdBuilder> cmdBuilders = Lists.newLinkedList();
 
         String projectPath = project.getLocation().toFile().getPath();
-        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+//        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
 //        String cmdFile = FileHandlerUtils.getCmdFile(projectPath, MYBATISGEN_BAT);
         String cmdFile = FileHandlerUtils.processScript(projectPath, MYBATISGEN_BAT);
 //        String cmdName = FilenameUtils.getName(cmdFile);
-        
-        cmdBuilders.add(new CmdBuilder(rootProjectPath, cmdFile, true, Lists.newArrayList()));
+        // Using "projectPath" instead of "rootProjectPath"
+        cmdBuilders.add(new CmdBuilder(projectPath, cmdFile, true, Lists.newArrayList()));
         if (cmdBuilders != null && !cmdBuilders.isEmpty()) {
             boolean isConfirm = MessageDialog.openConfirm(shell, "Mybatis Gen Confirm?", project.getName() + " Mybatis Gen Confirm?");
             if(isConfirm) {
