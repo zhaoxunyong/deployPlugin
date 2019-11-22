@@ -135,7 +135,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
             throw new Exception("No project or package selected.");
         }
         this.project = project;
-        
+    }
+    
+    protected void preCheck() throws Exception {
         ExecuteResult result = null;
         try {
             result = this.gitCheck();
