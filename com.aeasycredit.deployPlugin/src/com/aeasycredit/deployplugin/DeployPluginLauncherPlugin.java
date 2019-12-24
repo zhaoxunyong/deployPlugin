@@ -150,6 +150,11 @@ public class DeployPluginLauncherPlugin extends AbstractUIPlugin {
         IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
         return pref.getString(PreferenceConstants.GIT_SCRIPTS_URL);
     }
+    
+    public static String getCodeGenUrl() {
+        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
+        return pref.getString(PreferenceConstants.CODE_GEN_URL);
+    }
 
     public static String getGitUsername() {
         IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();

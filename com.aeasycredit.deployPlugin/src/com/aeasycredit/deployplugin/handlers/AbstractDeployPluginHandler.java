@@ -2,6 +2,11 @@ package com.aeasycredit.deployplugin.handlers;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,18 +15,21 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.internal.resources.Project;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.internal.core.CompilationUnit;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.eclipse.jdt.internal.core.PackageFragment;
 import org.eclipse.jface.dialogs.InputDialog;
@@ -34,6 +42,8 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -47,6 +57,8 @@ import com.aeasycredit.deployplugin.dialogs.PasswordDialog;
 import com.aeasycredit.deployplugin.exception.DeployPluginException;
 import com.aeasycredit.deployplugin.jobs.ClientJob;
 import com.aeasycredit.deployplugin.jobs.CompletionAction;
+import com.aeasycredit.deployplugin.jobs.ListenerHandler;
+import com.aeasycredit.deployplugin.jobs.ListenerJob;
 import com.aeasycredit.deployplugin.jobs.Refreshable;
 import com.aeasycredit.deployplugin.utils.BASE64Utils;
 import com.aeasycredit.deployplugin.utils.ExecuteResult;
@@ -73,6 +85,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected ISelection selection;
 
     private IProject project;
+    private CompilationUnit ifile;
     protected MessageConsoleStream console;
     
     protected final static String CHANGEVERSION_BAT = "./changeVersion.sh";
@@ -112,6 +125,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                     Iterator iterator = ts.iterator();
                     while (iterator.hasNext()) {
                         Object itObj = iterator.next();
+                        System.out.println("itObj--->"+itObj.getClass());
                         if (itObj instanceof Project) {
                             Project prj = (Project) itObj;
                             project = prj.getProject();
@@ -124,6 +138,10 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
                             PackageFragment packageFragment = (PackageFragment) itObj;
                             IJavaProject jproject = packageFragment.getJavaProject();
                             project = jproject.getProject();
+                            break;
+                        } else if (itObj instanceof CompilationUnit) {
+                        	this.ifile = (CompilationUnit) itObj;
+                        	project = ifile.getJavaProject().getProject();
                             break;
                         }
                     }
@@ -203,6 +221,95 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 
     protected void mybatisGen(ExecutionEvent event) throws Exception {
         mybatisGen(event, "Mybatis Gen");
+    }
+    
+    private String selectJavaFolder() throws Exception {
+    	DirectoryDialog javaDialog =
+    		    new DirectoryDialog(shell, SWT.ICON_QUESTION | SWT.OK| SWT.CANCEL);
+    	javaDialog.setText("Select A Java Target Folder");
+    	javaDialog.setMessage("Please Select A Java Target Folder");
+
+		// open dialog and await user selection
+		final String javaFilePath = javaDialog.open();
+		if(StringUtils.isBlank(javaFilePath)) {
+    		throw new Exception("Please select a java folder first!");
+//			MessageDialog.openWarning(shell, "Warning", "Please select a java folder first!");
+//			return selectJavaFolder();
+		}
+        // /Developer/workspace/business-commons/business-organization/src/main/java
+        // /Developer/workspace/saas/zero-react-admin/src/pages
+		if(!javaFilePath.endsWith("src/main/java")) {
+//    		throw new Exception("The javaFilePath must be located src/main/java folder!");
+			MessageDialog.openWarning(shell, "Warning", "The javaFilePath must be located src/main/java folder!");
+			return selectJavaFolder();
+		}
+		return javaFilePath;
+    }
+    
+    private String selectJsFolder() throws Exception {
+    	DirectoryDialog jsDialog =
+			    new DirectoryDialog(shell, SWT.ICON_QUESTION | SWT.OK| SWT.CANCEL);
+		jsDialog.setText("Select A JS Target Folder");
+		jsDialog.setMessage("Please Select A JS Target Folder");
+	
+		// open dialog and await user selection
+		final String jsFilePath = jsDialog.open();
+		if(StringUtils.isBlank(jsFilePath)) {
+    		throw new Exception("Please select a js folder first!");
+//			MessageDialog.openWarning(shell, "Warning", "Please select a js folder first!");
+//			return selectJsFolder();
+		}
+        // /Developer/workspace/saas/zero-react-admin/src/pages
+		if(!jsFilePath.endsWith("src/pages")) {
+//    		throw new Exception("The jsFilePath must be located pages folder!");
+			MessageDialog.openWarning(shell, "Warning", "The jsFilePath must be located pages folder!");
+			return selectJsFolder();
+		}
+		return jsFilePath;
+    }
+
+    protected void codeGen(ExecutionEvent event) throws Exception {
+    	if(this.ifile == null) {
+    		throw new Exception("Please select a java file first!");
+    	}
+    	final String className = this.ifile.getParent().getElementName()+"."+this.ifile.getElementName().replace(".java", "");
+    		
+    	final String javaFilePath = this.selectJavaFolder();
+		final String jsFilePath = this.selectJsFolder();
+		
+		boolean isConfirm = MessageDialog.openConfirm(shell, "Code Gen Confirm?", "Are you sure you want to generate the codes automatically?");
+        if(isConfirm) {
+
+            final CompletionAction completionAction = new CompletionAction(DeployPluginHelper.PLUGIN_ID, shell, this, console);
+            completionAction.setOkTitle("Code generate successfully");
+            completionAction.setOkMsg("Code generate successfully");
+            completionAction.setFailTitle("Code generate failed");
+            completionAction.setFailMsg("There was an exception while executing CodeGen");
+            final ListenerJob job = new ListenerJob("DeployPlugin: CodeGen", completionAction, new ListenerHandler() {
+
+    			@Override
+    			public void process() throws Exception {
+    				String baseUrl = DeployPluginLauncherPlugin.getCodeGenUrl();
+    				String url = baseUrl +"?className="+className+"&javaFilePath="+URLEncoder.encode(javaFilePath, "utf-8")+"&jsFilePath="+URLEncoder.encode(jsFilePath, "utf-8");
+    				URL uri = new URL(url);
+    	        	InputStream input = uri.openStream();
+    	        	try {
+    	        		String output = IOUtils.toString(input);
+    	        		System.out.println("output------>"+output);
+    	        	} finally {
+    	        		IOUtils.closeQuietly(input);
+    	        	}
+    			}
+            	
+            });
+
+            // if short action, otherwise is long Job.LONG
+            job.setPriority(Job.SHORT);
+            // show a dialog immediately
+            job.setUser(false);
+            // start as soon as possible
+            job.schedule();
+        }
     }
     
     /**

@@ -92,6 +92,18 @@
                menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.ProjectGroup">
          </action>
       </objectContribution>
+      <objectContribution
+            id="com.aeasycredit.DeployPlugin.File"
+            objectClass="org.eclipse.jdt.internal.core.CompilationUnit">
+         <action
+               class="com.aeasycredit.deployplugin.popup.actions.CodeGenAction:com.aeasycredit.DeployPlugin.commands.codeGenCommand"
+               definitionId="com.aeasycredit.DeployPlugin.commands.codeGenCommand"
+               enablesFor="1"
+               id="com.aeasycredit.DeployPlugin.codeGenAction"
+               label="Code Gen"
+               menubarPath="com.aeasycredit.DeployPlugin.menu1/com.aeasycredit.DeployPlugin.FileGroup">
+         </action>
+      </objectContribution>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -119,6 +131,11 @@
             id="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand"
             name="Mybatis Gen Command">
       </command>
+      <command
+            categoryId="com.aeasycredit.DeployPlugin.commands.category"
+            id="com.aeasycredit.DeployPlugin.commands.codeGenCommand"
+            name="Code Gen Command">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -137,6 +154,10 @@
       <handler
             class="com.aeasycredit.deployplugin.handlers.MybatisGenHandler"
             commandId="com.aeasycredit.DeployPlugin.commands.mybatisGenCommand">
+      </handler>
+      <handler
+            class="com.aeasycredit.deployplugin.handlers.CodeGenHandler"
+            commandId="com.aeasycredit.DeployPlugin.commands.codeGenCommand">
       </handler>
    </extension>
    <extension
@@ -164,6 +185,12 @@
             contextId="org.eclipse.ui.contexts.window"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="Ctrl+Shift+P">
+      </key>
+      <key
+            commandId="com.aeasycredit.DeployPlugin.commands.codeGenCommand"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+Shift+B">
       </key>
    </extension>
    <extension
@@ -200,6 +227,13 @@
                   id="com.aeasycredit.DeployPlugin.toolbars.mybatisGenCommand"
                   label="Mybatis Gen"
                   tooltip="Mybatis Gen">
+            </command>
+            <command
+                  commandId="com.aeasycredit.DeployPlugin.commands.codeGenCommand"
+                  icon="icons/linux.gif"
+                  id="com.aeasycredit.DeployPlugin.toolbars.codeGenCommand"
+                  label="Code Gen"
+                  tooltip="Code Gen">
             </command>
          </toolbar>
       </menuContribution>

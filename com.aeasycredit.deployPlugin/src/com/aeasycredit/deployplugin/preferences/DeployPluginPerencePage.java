@@ -49,6 +49,8 @@ public class DeployPluginPerencePage extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor(PreferenceConstants.GIT_SHOWTAG_IN_DROPDOWN, "Show tag in dropdown?", getFieldEditorParent()));
 		addField(new BooleanFieldEditor(PreferenceConstants.GIT_RELEASE_WITH_TAG, "Tag the release version automatically?", getFieldEditorParent()));
 
+		addField(new StringFieldEditor(PreferenceConstants.CODE_GEN_URL, "Code Gen Url:", getFieldEditorParent()));
+		
 //		addField(new RadioGroupFieldEditor(PreferenceConstants.P_CHOICE, "An example of a multiple-choice preference", 1, new String[][] { { "&Choice 1", "choice1" }, { "C&hoice 2", "choice2" } }, getFieldEditorParent()));
 //		addField(new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
 //		addField(new ComboFieldEditor("id", "New ComboFieldEditor", new String[][]{{"name_1", "value_1"}, {"name_2", "value_2"}}, getFieldEditorParent()));
