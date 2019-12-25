@@ -223,7 +223,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         mybatisGen(event, "Mybatis Gen");
     }
     
-    private String selectJavaFolder() throws Exception {
+    /*private String selectJavaFolder() throws Exception {
     	DirectoryDialog javaDialog =
     		    new DirectoryDialog(shell, SWT.ICON_QUESTION | SWT.OK| SWT.CANCEL);
     	javaDialog.setText("Select A Java Target Folder");
@@ -244,7 +244,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 			return selectJavaFolder();
 		}
 		return javaFilePath;
-    }
+    }*/
     
     private String selectJsFolder() throws Exception {
     	DirectoryDialog jsDialog =
@@ -273,9 +273,13 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     		throw new Exception("Please select a java file first!");
     	}
     	final String className = this.ifile.getParent().getElementName()+"."+this.ifile.getElementName().replace(".java", "");
-    		
-    	final String javaFilePath = this.selectJavaFolder();
-		final String jsFilePath = this.selectJsFolder();
+    	String projectPath = project.getLocation().toFile().getPath();
+    	final String javaFilePath = projectPath+File.separator+"src"+File.separator+"main"+File.separator+"java";
+		String jsFilePath_ = DeployPluginLauncherPlugin.getCodeGenJsPath();
+		if(StringUtils.isBlank(jsFilePath_)) {
+			jsFilePath_ = this.selectJsFolder();
+		}
+		final String jsFilePath = jsFilePath_;
 		final MessageConsoleStream finalConsole = this.console;
 		boolean isConfirm = MessageDialog.openConfirm(shell, "Code Gen Confirm?", "Are you sure you want to generate the codes automatically?");
         if(isConfirm) {

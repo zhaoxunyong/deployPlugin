@@ -50,6 +50,7 @@ public class DeployPluginPerencePage extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor(PreferenceConstants.GIT_RELEASE_WITH_TAG, "Tag the release version automatically?", getFieldEditorParent()));
 
 		addField(new StringFieldEditor(PreferenceConstants.CODE_GEN_URL, "Code Gen Url:", getFieldEditorParent()));
+		addField(new DirectoryFieldEditor(PreferenceConstants.CODE_GEN_JS_PATH, "&The Js Path Of Generating Code:", getFieldEditorParent()));
 		
 //		addField(new RadioGroupFieldEditor(PreferenceConstants.P_CHOICE, "An example of a multiple-choice preference", 1, new String[][] { { "&Choice 1", "choice1" }, { "C&hoice 2", "choice2" } }, getFieldEditorParent()));
 //		addField(new StringFieldEditor(PreferenceConstants.P_STRING, "A &text preference:", getFieldEditorParent()));
