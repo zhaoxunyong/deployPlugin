@@ -85,7 +85,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected ISelection selection;
 
     private IProject project;
-    private CompilationUnit ifile;
+    private List<CompilationUnit> ifiles;
     protected MessageConsoleStream console;
     
     protected final static String CHANGEVERSION_BAT = "./changeVersion.sh";
@@ -113,6 +113,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     @SuppressWarnings("rawtypes")
     protected void init() throws Exception {
     	clearConsole();
+        this.ifiles = Lists.newArrayList();
 //      String name = "windows start";
         IProject project = null;
         if (selection.isEmpty() || selection instanceof TextSelection) {
@@ -122,29 +123,35 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
             if (selection instanceof TreeSelection) {
                 TreeSelection ts = (TreeSelection) selection;
                 if (!ts.isEmpty()) {
-                    Iterator iterator = ts.iterator();
-                    while (iterator.hasNext()) {
-                        Object itObj = iterator.next();
-                        System.out.println("itObj--->"+itObj.getClass());
-                        if (itObj instanceof Project) {
-                            Project prj = (Project) itObj;
-                            project = prj.getProject();
-                            break;
-                        } else if (itObj instanceof JavaProject) {
-                            JavaProject jproject = (JavaProject) itObj;
-                            project = jproject.getProject();
-                            break;
-                        } else if (itObj instanceof PackageFragment) {
-                            PackageFragment packageFragment = (PackageFragment) itObj;
-                            IJavaProject jproject = packageFragment.getJavaProject();
-                            project = jproject.getProject();
-                            break;
-                        } else if (itObj instanceof CompilationUnit) {
-                        	this.ifile = (CompilationUnit) itObj;
-                        	project = ifile.getJavaProject().getProject();
-                            break;
-                        }
-                    }
+	        	    List<Object> itObjs = ts.toList();
+	        	    if(itObjs.size() > 0) {
+	        	    	for(Object itObj : itObjs) {
+	        	    		if (itObj instanceof CompilationUnit) {
+	        	    			CompilationUnit compilationUnit = (CompilationUnit) itObj;
+			                	ifiles.add(compilationUnit);
+			                	project = compilationUnit.getJavaProject().getProject();
+			                }
+	        	    	}
+	        	    } else {
+//		        	    for(Object itObj : itObjs) {
+	        	    	Object itObj = itObjs.get(0);
+		                System.out.println("itObj--->"+itObj.getClass());
+		                if (itObj instanceof Project) {
+		                    Project prj = (Project) itObj;
+		                    project = prj.getProject();
+//		                    break;
+		                } else if (itObj instanceof JavaProject) {
+		                    JavaProject jproject = (JavaProject) itObj;
+		                    project = jproject.getProject();
+//		                    break;
+		                } else if (itObj instanceof PackageFragment) {
+		                    PackageFragment packageFragment = (PackageFragment) itObj;
+		                    IJavaProject jproject = packageFragment.getJavaProject();
+		                    project = jproject.getProject();
+//		                    break;
+		                }
+//	                    }
+	        	    }
 
                 }
             }
@@ -269,10 +276,9 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
 
     protected void codeGen(ExecutionEvent event) throws Exception {
-    	if(this.ifile == null) {
+    	if(this.ifiles.isEmpty()) {
     		throw new Exception("Please select a java file first!");
     	}
-    	final String className = this.ifile.getParent().getElementName()+"."+this.ifile.getElementName().replace(".java", "");
     	String projectPath = project.getLocation().toFile().getPath();
     	final String javaFilePath = projectPath+File.separator+"src"+File.separator+"main"+File.separator+"java";
 		String jsFilePath_ = DeployPluginLauncherPlugin.getCodeGenJsPath();
@@ -282,39 +288,43 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		final String jsFilePath = jsFilePath_;
 		final MessageConsoleStream finalConsole = this.console;
 		boolean isConfirm = MessageDialog.openConfirm(shell, "Code Gen Confirm?", "Are you sure you want to generate the codes automatically?");
-        if(isConfirm) {
-
-            final CompletionAction completionAction = new CompletionAction(DeployPluginHelper.PLUGIN_ID, shell, this, console);
-            completionAction.setOkTitle("Code generate successfully");
-            completionAction.setOkMsg("Code generate successfully");
-            completionAction.setFailTitle("Code generate failed");
-            completionAction.setFailMsg("There was an exception while executing CodeGen");
-            final ListenerJob job = new ListenerJob("DeployPlugin: CodeGen", completionAction, new ListenerHandler() {
-
-    			@Override
-    			public void process() throws Exception {
-    				String baseUrl = DeployPluginLauncherPlugin.getCodeGenUrl();
-    				String url = baseUrl +"?className="+className+"&javaFilePath="+URLEncoder.encode(javaFilePath, "utf-8")+"&jsFilePath="+URLEncoder.encode(jsFilePath, "utf-8");
-    				URL uri = new URL(url);
-    	        	InputStream input = uri.openStream();
-    	        	try {
-    	        		String output = IOUtils.toString(input);
-    	        		System.out.println("output------>"+output);
-    	        		finalConsole.print(output);
-    	        	} finally {
-    	        		IOUtils.closeQuietly(input);
-    	        	}
-    			}
-            	
-            });
-
-            // if short action, otherwise is long Job.LONG
-            job.setPriority(Job.SHORT);
-            // show a dialog immediately
-            job.setUser(false);
-            // start as soon as possible
-            job.schedule();
-        }
+		if(isConfirm) {
+	    	for(CompilationUnit ifile : this.ifiles) {
+	        	final String className = ifile.getParent().getElementName()+"."+ifile.getElementName().replace(".java", "");
+	            final CompletionAction completionAction = new CompletionAction(DeployPluginHelper.PLUGIN_ID, shell, this, console);
+	            completionAction.setOkTitle("Code generate successfully");
+	            completionAction.setOkMsg("Code generate successfully");
+	            completionAction.setFailTitle("Code generate failed");
+	            completionAction.setFailMsg("There was an exception while executing CodeGen");
+	            final ListenerJob job = new ListenerJob("DeployPlugin: CodeGen", completionAction, new ListenerHandler() {
+	
+	    			@Override
+	    			public void process() throws Exception {
+	    				finalConsole.println("Starting generate "+className+"...");
+	    				String baseUrl = DeployPluginLauncherPlugin.getCodeGenUrl();
+	    				String url = baseUrl +"?className="+className+"&javaFilePath="+URLEncoder.encode(javaFilePath, "utf-8")+"&jsFilePath="+URLEncoder.encode(jsFilePath, "utf-8");
+	    				URL uri = new URL(url);
+	    	        	InputStream input = uri.openStream();
+	    	        	try {
+	    	        		String output = IOUtils.toString(input);
+	    	        		System.out.println("output------>"+output);
+	    	        		finalConsole.println(className+" done. "+output);
+	        				finalConsole.println(className+" has been generated successfully!");
+	    	        	} finally {
+	    	        		IOUtils.closeQuietly(input);
+	    	        	}
+	    			}
+	            	
+	            });
+	
+	            // if short action, otherwise is long Job.LONG
+	            job.setPriority(Job.SHORT);
+	            // show a dialog immediately
+	            job.setUser(false);
+	            // start as soon as possible
+	            job.schedule();
+	    	}
+		}
     }
     
     /**
