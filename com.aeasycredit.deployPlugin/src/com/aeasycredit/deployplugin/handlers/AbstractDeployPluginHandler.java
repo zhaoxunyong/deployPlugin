@@ -276,7 +276,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     		
     	final String javaFilePath = this.selectJavaFolder();
 		final String jsFilePath = this.selectJsFolder();
-		
+		final MessageConsoleStream finalConsole = this.console;
 		boolean isConfirm = MessageDialog.openConfirm(shell, "Code Gen Confirm?", "Are you sure you want to generate the codes automatically?");
         if(isConfirm) {
 
@@ -296,6 +296,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     	        	try {
     	        		String output = IOUtils.toString(input);
     	        		System.out.println("output------>"+output);
+    	        		finalConsole.print(output);
     	        	} finally {
     	        		IOUtils.closeQuietly(input);
     	        	}
