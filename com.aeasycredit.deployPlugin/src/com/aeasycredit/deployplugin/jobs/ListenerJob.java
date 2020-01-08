@@ -10,6 +10,7 @@ import org.eclipse.ui.progress.IProgressConstants;
 
 import com.aeasycredit.deployplugin.DeployPluginHelper;
 import com.aeasycredit.deployplugin.DeployPluginLauncherPlugin;
+import com.aeasycredit.deployplugin.handlers.ANSIColor;
 
 /**
  *  http://blog.eitchnet.ch/archives/46
@@ -47,7 +48,7 @@ public class ListenerJob extends Job {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         IStatus status = null;
-        completionAction.getConsole().println("loading...");
+//        completionAction.getConsole().println("loading...");
         // activate the progress bar with an unknown amount of task work
         monitor.beginTask("Loading " + getName(), IProgressMonitor.UNKNOWN);
         // perform the job
@@ -56,7 +57,9 @@ public class ListenerJob extends Job {
             boolean ok = true;
             
             try {
+            	completionAction.getConsole().println(ANSIColor.RED_BRIGHT.toString());
                 listenerHandler.process();
+                completionAction.getConsole().println(ANSIColor.RESET.toString());
             } catch (Exception e) {
                 ok = false;
                 throw new Exception("Listener Execute Failed: "+e.getMessage());
