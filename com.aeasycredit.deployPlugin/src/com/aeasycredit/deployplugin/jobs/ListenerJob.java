@@ -47,7 +47,7 @@ public class ListenerJob extends Job {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         IStatus status = null;
-        completionAction.getConsole().print("loading...");
+        completionAction.getConsole().println("loading...");
         // activate the progress bar with an unknown amount of task work
         monitor.beginTask("Loading " + getName(), IProgressMonitor.UNKNOWN);
         // perform the job
@@ -62,7 +62,7 @@ public class ListenerJob extends Job {
                 throw new Exception("Listener Execute Failed: "+e.getMessage());
             }
             completionAction.setOk(ok);
-            completionAction.getConsole().print(this.getName()+(ok?" OK.":" ERROR."));
+            completionAction.getConsole().println(this.getName()+(ok?" OK.":" ERROR."));
             // refresh workspace
             completionAction.getRefreshable().refresh();
             status = Status.OK_STATUS;
@@ -75,7 +75,7 @@ public class ListenerJob extends Job {
             // task to be NOT ok and set the exception so it
             // can be shown to the user
             completionAction.setThrowable(e);
-            completionAction.getConsole().print("ERROR.");
+            completionAction.getConsole().println("ERROR.");
             completionAction.setOk(false);
             status = new Status(IStatus.ERROR, DeployPluginHelper.PLUGIN_ID, e.getLocalizedMessage(), e);
         }

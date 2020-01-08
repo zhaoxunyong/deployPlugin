@@ -43,7 +43,11 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Device;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.DirectoryDialog;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
@@ -297,19 +301,44 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 	            completionAction.setFailTitle("Code generate failed");
 	            completionAction.setFailMsg("There was an exception while executing CodeGen");
 	            final ListenerJob job = new ListenerJob("DeployPlugin: CodeGen", completionAction, new ListenerHandler() {
-	
+	            	// https://stackoverflow.com/questions/5762491/how-to-print-color-in-console-using-system-out-println
+	            	public static final String ANSI_RESET = "\u001B[0m";
+	            	public static final String ANSI_BLACK = "\u001B[30m";
+	            	public static final String ANSI_RED = "\u001B[31m";
+	            	public static final String ANSI_GREEN = "\u001B[32m";
+	            	public static final String ANSI_YELLOW = "\u001B[33m";
+	            	public static final String ANSI_BLUE = "\u001B[34m";
+	            	public static final String ANSI_PURPLE = "\u001B[35m";
+	            	public static final String ANSI_CYAN = "\u001B[36m";
+	            	public static final String ANSI_WHITE = "\u001B[37m";
+	            	
+	            	public static final String ANSI_BLACK_BACKGROUND = "\u001B[40m";
+	            	public static final String ANSI_RED_BACKGROUND = "\u001B[41m";
+	            	public static final String ANSI_GREEN_BACKGROUND = "\u001B[42m";
+	            	public static final String ANSI_YELLOW_BACKGROUND = "\u001B[43m";
+	            	public static final String ANSI_BLUE_BACKGROUND = "\u001B[44m";
+	            	public static final String ANSI_PURPLE_BACKGROUND = "\u001B[45m";
+	            	public static final String ANSI_CYAN_BACKGROUND = "\u001B[46m";
+	            	public static final String ANSI_WHITE_BACKGROUND = "\u001B[47m";
+	            	
 	    			@Override
 	    			public void process() throws Exception {
-	    				finalConsole.println("Starting generate "+className+"...");
+//	    				finalConsole.println("Starting generate "+className+"...");
 	    				String baseUrl = DeployPluginLauncherPlugin.getCodeGenUrl();
 	    				String url = baseUrl +"?className="+className+"&javaFilePath="+URLEncoder.encode(javaFilePath, "utf-8")+"&jsFilePath="+URLEncoder.encode(jsFilePath, "utf-8");
 	    				URL uri = new URL(url);
 	    	        	InputStream input = uri.openStream();
 	    	        	try {
 	    	        		String output = IOUtils.toString(input);
-	    	        		System.out.println("output------>"+output);
-	    	        		finalConsole.println(className+" done. "+output);
-	        				finalConsole.println(className+" has been generated successfully!");
+//	    	        		System.out.println("output------>"+output);
+//	    	        		Device device = Display.getDefault();
+//	    	        		RGB red = new RGB(255, 0, 0);
+//	    	        		Color color = new Color(device, red);
+//	    	        		finalConsole.setColor(color);
+	    	        	    finalConsole.println(ANSIColor.RED_BRIGHT.toString()); //设置前景色 为YELLOW
+	    	        	    finalConsole.println(output);
+	    	        	    finalConsole.println(ANSIColor.RESET.toString());
+//	        				finalConsole.println(className+" has been generated successfully!");
 	    	        	} finally {
 	    	        		IOUtils.closeQuietly(input);
 	    	        	}
