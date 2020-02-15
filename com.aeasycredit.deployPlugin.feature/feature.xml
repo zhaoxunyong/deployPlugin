@@ -2,7 +2,7 @@
 <feature
       id="com.aeasycredit.deployPlugin.feature"
       label="com.aeasycredit.deployplugin"
-      version="1.1.26"
+      version="1.1.27"
       provider-name="zerofinance"
       plugin="com.aeasycredit.DeployPlugin">
 
@@ -26,7 +26,7 @@
          id="com.aeasycredit.DeployPlugin"
          download-size="0"
          install-size="0"
-         version="1.1.26"
+         version="1.1.27"
          unpack="false"/>
 
 </feature>

@@ -134,27 +134,23 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 	        	    			CompilationUnit compilationUnit = (CompilationUnit) itObj;
 			                	ifiles.add(compilationUnit);
 			                	project = compilationUnit.getJavaProject().getProject();
+			                } else {
+			                	if (itObj instanceof Project) {
+				                    Project prj = (Project) itObj;
+				                    project = prj.getProject();
+//				                    break;
+				                } else if (itObj instanceof JavaProject) {
+				                    JavaProject jproject = (JavaProject) itObj;
+				                    project = jproject.getProject();
+//				                    break;
+				                } else if (itObj instanceof PackageFragment) {
+				                    PackageFragment packageFragment = (PackageFragment) itObj;
+				                    IJavaProject jproject = packageFragment.getJavaProject();
+				                    project = jproject.getProject();
+//				                    break;
+				                }
 			                }
 	        	    	}
-	        	    } else {
-//		        	    for(Object itObj : itObjs) {
-	        	    	Object itObj = itObjs.get(0);
-		                System.out.println("itObj--->"+itObj.getClass());
-		                if (itObj instanceof Project) {
-		                    Project prj = (Project) itObj;
-		                    project = prj.getProject();
-//		                    break;
-		                } else if (itObj instanceof JavaProject) {
-		                    JavaProject jproject = (JavaProject) itObj;
-		                    project = jproject.getProject();
-//		                    break;
-		                } else if (itObj instanceof PackageFragment) {
-		                    PackageFragment packageFragment = (PackageFragment) itObj;
-		                    IJavaProject jproject = packageFragment.getJavaProject();
-		                    project = jproject.getProject();
-//		                    break;
-		                }
-//	                    }
 	        	    }
 
                 }
@@ -369,7 +365,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     }
     
     /**
-     * 如果version1>version2返回1，如果version<version2返回-1，否则返回0
+     * 濡傛灉version1>version2杩斿洖1锛屽鏋渧ersion<version2杩斿洖-1锛屽惁鍒欒繑鍥�0
      */
     private int compareVersion(String version1, String version2) {
     	if(version1==null || version2==null)
@@ -404,7 +400,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     private ExecuteResult gitCheck() throws Exception {
         /*String projectPath = project.getLocation().toFile().getPath();
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
-    	String command = "git remote show origin|grep `git branch|grep '*' | awk '{print $NF}'` | egrep '本地已过时|local out of date'";
+    	String command = "git remote show origin|grep `git branch|grep '*' | awk '{print $NF}'` | egrep '鏈湴宸茶繃鏃秥local out of date'";
         List<String> parameters = Lists.newArrayList();
 //    	String command = "git ls-remote | grep -v '\\^{}' |  grep 'refs/heads' |awk '{print $NF}' | sed 's;refs/heads/;;g' | sort -t '.' -r -k 2 -V|egrep -i '(release|hotfix)$'";
 //      List<String> parameters = Lists.newArrayList();
@@ -446,7 +442,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //		            String remoteBranchVersion = version.split("/")[2];
 		            String remoteBranchVersion = StringUtils.substringAfterLast(version, "/");//.replace(".release", "").replace(".hotfix", "");
 		            String version1 = remoteBranchVersion;
-		            // 如果version1>version2返回1，如果version<version2返回-1，否则返回0
+		            // 濡傛灉version1>version2杩斿洖1锛屽鏋渧ersion<version2杩斿洖-1锛屽惁鍒欒繑鍥�0
 		            if(compareVersion(version1, version2) == 1) {
 		            	version2 = version1;
 		                currentBranch = remoteBranchVersion;
@@ -467,7 +463,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 //		            String remoteBranchVersion = version.split("/")[2];
 		            String remoteBranchVersion = StringUtils.substringAfterLast(version, "/");//.replace(".release", "").replace(".hotfix", "");
 		            String version1 = remoteBranchVersion.replaceAll("\\.release|\\.hotfix", "");
-		            // 如果version1>version2返回1，如果version<version2返回-1，否则返回0
+		            // 濡傛灉version1>version2杩斿洖1锛屽鏋渧ersion<version2杩斿洖-1锛屽惁鍒欒繑鍥�0
 		            if(compareVersion(version1, version2) == 1) {
 		            	version2 = version1;
 		                currentBranch = remoteBranchVersion;
