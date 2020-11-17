@@ -98,7 +98,7 @@ public class DeployPluginHelper {
     }
 
     /** 
-     * 只支持sh脚本执行，如果是具体的命令的话，请使用CmdExecutor类执行
+             *   只支持sh脚本执行，如果是具体的命令的话，请使用CmdExecutor类执行
      *
      * @param console
      * @param workHome
