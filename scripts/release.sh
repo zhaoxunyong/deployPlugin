@@ -1,4 +1,9 @@
 #!/bin/bash
+
+if [[ "$(uname)" == "Darwin" && -f ~/.zshrc ]]; then
+  source ~/.zshrc
+fi
+
 export PATH="/usr/local/bin:/usr/bin:$JAVA_HOME/bin:$MVN_HOME/bin:$PATH"
 
 sedi() {
@@ -118,7 +123,8 @@ function deleteUnusedReleaseBranch() {
     if [[ "${reserveVersionNumber}" == "" ]]; then
         reserveVersionNumber=20
     fi
-    deleteBranchs=`git branch -a --sort=-committerdate|grep ${type}|grep remotes|sed 's;remotes/origin/;;'|sort -t '.' -r -k 1 -V|sed "1,${reserveVersionNumber}d"`
+    #deleteBranchs=`git branch -a --sort=-committerdate|grep ${type}|grep remotes|sed 's;remotes/origin/;;'|sort -t '.' -r -k 1 -V|sed "1,${reserveVersionNumber}d"`
+    deleteBranchs=`git branch --sort=-committerdate|grep ${type}|grep remotes|sed 's;remotes/origin/;;'|sort -t '.' -r -k 1 -V|sed "1,${reserveVersionNumber}d"`
     for deleteBranch in $deleteBranchs   
     do
         # Keep only the last releases
@@ -131,7 +137,7 @@ function deleteUnusedReleaseBranch() {
 function deleteUnusedTags() {
   reserveVersionNumber=$2
   if [[ "${reserveVersionNumber}" == "" ]]; then
-    reserveVersionNumber=20
+    reserveVersionNumber=50
   fi
   ready4deleteTags=`git ls-remote | grep -v "\^{}" |  grep tags|awk '{print $NF}'|sed 's;refs/tags/;;g'|sort -t '.' -r -k 1 -V|sed "1,${reserveVersionNumber}d"`
   for tag in $ready4deleteTags
@@ -149,7 +155,7 @@ function changeReleaseVersion() {
   mvnVersion=$1
   ls pom.xml &>/dev/null
   if [[ $? == 0 ]]; then
-    mvn versions:set -DnewVersion=${mvnVersion} >/dev/null
+    mvn versions:set -DnewVersion=${mvnVersion} > /dev/null
     if [[ $? == 0 ]]; then
       mvn versions:commit >/dev/null
     else
@@ -165,12 +171,12 @@ function changeNextVersion() {
   nextVersion=$1
   ls pom.xml &>/dev/null
   if [[ $? == 0 ]]; then
-    mvn versions:set -DnewVersion=${nextVersion} >/dev/null
+    mvn versions:set -DnewVersion=${nextVersion} > /dev/null
     if [[ $? == 0 ]]; then
       mvn versions:commit >/dev/null
     else
       mvn versions:revert >/dev/null
-      echo "Changed version failed, please check!"
+      echo "Changed next version failed, please check!"
       exit -1
     fi
   fi
@@ -185,6 +191,14 @@ function updateVersionRecord() {
   echo "version=$version" > $verFile
 }
 
+currPath=`pwd`
+projectName=${currPath##*/}
+if [[ "${projectName}" == "alphatimes-commons" ]]; then
+  cd "${projectName}"
+fi
+
+echo "Current prject path=`pwd`"
+
 #Get next develop version
 releaseVersion=$(echo $branchVersion|sed 's;\.test;;'|sed 's;\.release;;'|sed 's;\.hotfix;;')
 arr=(${releaseVersion//./ })
@@ -197,15 +211,21 @@ echo "branchVersion--------${branchVersion}"
 echo "currentBranchVersion--------${currentBranchVersion}"
 SwitchBranch $branchVersion
 
+#Working for changing the versoin of the other dependencies project before Changing version.
+if [[ -f "deploy.sh" ]]; then
+  bash deploy.sh beforeChangeVersion $releaseVersion $branchVersion
+fi
 changeReleaseVersion $releaseVersion
 updateVersionRecord $releaseVersion
+#Working for changing the versoin of the other dependencies project when Changing version is done.
 if [[ -f "deploy.sh" ]]; then
-  bash deploy.sh changeVersion $releaseVersion
+  bash deploy.sh changeVersion $releaseVersion $branchVersion
 fi
 
 # deploy
+#Working for pushing jar to maven repostitories
 if [[ -f "deploy.sh" ]]; then
-  bash deploy.sh deploy $releaseVersion
+  bash deploy.sh deploy $releaseVersion $branchVersion
 #else
   #cat pom.xml 2>/dev/null | grep "<skip_maven_deploy>false</skip_maven_deploy>" &> /dev/null
   #if [[ $? == 0 ]]; then
@@ -217,16 +237,22 @@ if [[ "$needTag" == "true" ]]; then
   Tag $newTag
 fi
 git checkout $currentBranchVersion
-changeNextVersion $nextDevelopVersion
+
+#Working for changing the versoin of the other dependencies project before Changing version.
 if [[ -f "deploy.sh" ]]; then
-  bash deploy.sh changeVersion $nextDevelopVersion
+  bash deploy.sh beforeChangeVersion $nextDevelopVersion $currentBranchVersion
+fi
+changeNextVersion $nextDevelopVersion
+#Working for changing the versoin of the other dependencies project when Changing version is done.
+if [[ -f "deploy.sh" ]]; then
+  bash deploy.sh changeVersion $nextDevelopVersion $currentBranchVersion
 fi
 updateVersionRecord $nextDevelopVersion
 Push $currentBranchVersion
 
 
 # Keep only the last releases version
-#echo "Deleting unused release or hotfix branches..."
-#deleteUnusedReleaseBranch release
-#deleteUnusedReleaseBranch hotfix
-#echo "Release or hotfix branches have been deleted..."
+echo "Deleting unused release or hotfix branches..."
+deleteUnusedReleaseBranch release
+deleteUnusedReleaseBranch hotfix
+echo "Release or hotfix branches have been deleted..."

@@ -27,7 +27,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 		store.setDefault(PreferenceConstants.GIT_SHOWTAG_IN_DROPDOWN, false);
 		store.setDefault(PreferenceConstants.GIT_RELEASE_WITH_TAG, false);
 		store.setDefault(PreferenceConstants.GIT_BASH_DEBUG, false);
-		store.setDefault(PreferenceConstants.CODE_GEN_URL, getCodeGenUrl());
+//		store.setDefault(PreferenceConstants.CODE_GEN_URL, getCodeGenUrl());
 //		store.setDefault(PreferenceConstants.P_CHOICE, "choice2");
 //		store.setDefault(PreferenceConstants.P_STRING, "Defaults value");
 	}
@@ -37,10 +37,10 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
 	     return msg;
 	  }
 
-	  private String getCodeGenUrl() {
-	  	String msg = getResourceString("code.gen.url");
-	     return msg;
-	  }
+//	  private String getCodeGenUrl() {
+//	  	String msg = getResourceString("code.gen.url");
+//	     return msg;
+//	  }
 
     /**
      * Returns the string from the plugin's resource bundle,

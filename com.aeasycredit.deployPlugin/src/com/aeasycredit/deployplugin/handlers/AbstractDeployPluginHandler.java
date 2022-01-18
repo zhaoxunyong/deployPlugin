@@ -275,7 +275,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		return jsFilePath;
     }
 
-    protected void codeGen(ExecutionEvent event) throws Exception {
+    /*protected void codeGen(ExecutionEvent event) throws Exception {
     	if(this.ifiles.isEmpty()) {
     		throw new Exception("Please select a java file first!");
     	}
@@ -330,7 +330,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 	            // start as soon as possible
 	            job.schedule();
 		}
-    }
+    }*/
     
     /**
      * http://www.vogella.com/tutorials/EclipseDialogs/article.html

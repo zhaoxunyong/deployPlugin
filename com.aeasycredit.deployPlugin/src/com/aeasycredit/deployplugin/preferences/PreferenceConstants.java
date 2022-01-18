@@ -22,8 +22,7 @@ public class PreferenceConstants {
 	public static final String GIT_RELEASE_WITH_TAG = "gitReleaseWithTag";
 	public static final String GIT_BASH_DEBUG = "gitBashDebug";
 
-	public static final String CODE_GEN_URL = "codeGenUrl";
-
-	public static final String CODE_GEN_JS_PATH = "codeGenJsPath";
+//	public static final String CODE_GEN_URL = "codeGenUrl";
+//	public static final String CODE_GEN_JS_PATH = "codeGenJsPath";
 	
 }

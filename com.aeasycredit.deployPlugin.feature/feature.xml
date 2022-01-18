@@ -2,12 +2,12 @@
 <feature
       id="com.aeasycredit.deployPlugin.feature"
       label="com.aeasycredit.deployplugin"
-      version="1.1.27"
+      version="1.1.28"
       provider-name="zerofinance"
       plugin="com.aeasycredit.DeployPlugin">
 
-   <description url="http://www.zerofinance.cn/description">
-      http://www.zerofinance.cn/description
+   <description url="https://appbuild.zerofinance.hk/eclipse/">
+      Using &quot;https://appbuild.zerofinance.hk/eclipse/&quot; to be up-to-date.
    </description>
 
    <copyright url="http://www.zerofinance.cn/copyright">
@@ -19,14 +19,14 @@
    </license>
 
    <url>
-      <update label="com.aeasycredit.deployplugin" url="http://192.168.108.183:8888/"/>
+      <update label="com.aeasycredit.deployplugin" url="https://appbuild.zerofinance.hk/eclipse/"/>
    </url>
 
    <plugin
          id="com.aeasycredit.DeployPlugin"
          download-size="0"
          install-size="0"
-         version="1.1.27"
+         version="1.1.28"
          unpack="false"/>
 
 </feature>

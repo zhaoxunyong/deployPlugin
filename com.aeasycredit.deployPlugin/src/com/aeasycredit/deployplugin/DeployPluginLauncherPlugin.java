@@ -151,15 +151,15 @@ public class DeployPluginLauncherPlugin extends AbstractUIPlugin {
         return pref.getString(PreferenceConstants.GIT_SCRIPTS_URL);
     }
     
-    public static String getCodeGenUrl() {
-        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
-        return pref.getString(PreferenceConstants.CODE_GEN_URL);
-    }
-
-    public static String getCodeGenJsPath() {
-        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
-        return pref.getString(PreferenceConstants.CODE_GEN_JS_PATH);
-    }
+//    public static String getCodeGenUrl() {
+//        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
+//        return pref.getString(PreferenceConstants.CODE_GEN_URL);
+//    }
+//
+//    public static String getCodeGenJsPath() {
+//        IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
+//        return pref.getString(PreferenceConstants.CODE_GEN_JS_PATH);
+//    }
 
     public static String getGitUsername() {
         IPreferenceStore pref =	DeployPluginLauncherPlugin.getDefault().getPreferenceStore();
