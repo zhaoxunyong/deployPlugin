@@ -253,27 +253,27 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
 		return javaFilePath;
     }*/
     
-    private String selectJsFolder() throws Exception {
-    	DirectoryDialog jsDialog =
-			    new DirectoryDialog(shell, SWT.ICON_QUESTION | SWT.OK| SWT.CANCEL);
-		jsDialog.setText("Select A JS Target Folder");
-		jsDialog.setMessage("Please Select A JS Target Folder");
-	
-		// open dialog and await user selection
-		final String jsFilePath = jsDialog.open();
-		if(StringUtils.isBlank(jsFilePath)) {
-    		throw new Exception("Please select a js folder first!");
-//			MessageDialog.openWarning(shell, "Warning", "Please select a js folder first!");
+//    private String selectJsFolder() throws Exception {
+//    	DirectoryDialog jsDialog =
+//			    new DirectoryDialog(shell, SWT.ICON_QUESTION | SWT.OK| SWT.CANCEL);
+//		jsDialog.setText("Select A JS Target Folder");
+//		jsDialog.setMessage("Please Select A JS Target Folder");
+//	
+//		// open dialog and await user selection
+//		final String jsFilePath = jsDialog.open();
+//		if(StringUtils.isBlank(jsFilePath)) {
+//    		throw new Exception("Please select a js folder first!");
+////			MessageDialog.openWarning(shell, "Warning", "Please select a js folder first!");
+////			return selectJsFolder();
+//		}
+//        // /Developer/workspace/saas/zero-react-admin/src/pages
+//		if(!jsFilePath.endsWith("src/pages")) {
+////    		throw new Exception("The jsFilePath must be located pages folder!");
+//			MessageDialog.openWarning(shell, "Warning", "The jsFilePath must be located pages folder!");
 //			return selectJsFolder();
-		}
-        // /Developer/workspace/saas/zero-react-admin/src/pages
-		if(!jsFilePath.endsWith("src/pages")) {
-//    		throw new Exception("The jsFilePath must be located pages folder!");
-			MessageDialog.openWarning(shell, "Warning", "The jsFilePath must be located pages folder!");
-			return selectJsFolder();
-		}
-		return jsFilePath;
-    }
+//		}
+//		return jsFilePath;
+//    }
 
     /*protected void codeGen(ExecutionEvent event) throws Exception {
     	if(this.ifiles.isEmpty()) {
