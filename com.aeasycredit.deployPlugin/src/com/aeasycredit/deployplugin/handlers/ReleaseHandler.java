@@ -36,8 +36,9 @@ public class ReleaseHandler extends AbstractDeployPluginHandler {
         this.selection = window.getSelectionService().getSelection();
         try {
         	this.init();
-        	this.preCheck();
-            release(event);
+        	if(this.preCheck()) {
+                release(event);
+        	}
 		} catch (Exception e) {
 //			MessageDialog.openError(shell, "release error", e.getMessage());
 			MultiStatus status = Exceptionhelper.createMultiStatus(e.getLocalizedMessage(), e);

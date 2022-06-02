@@ -97,6 +97,7 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     protected final static String NEWBRANCH_BAT = "./newBranch.sh";
     protected final static String TAG_BAT = "./tag.sh";
     protected final static String GITCHECK_BAT = "./gitCheck.sh";
+    protected final static String COMMITED_LOGS_BAT = "./committedLogs.sh";
     
     @Deprecated
     protected final static String MERGE_BAT = "./merge.sh";
@@ -162,7 +163,8 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         this.project = project;
     }
     
-    protected void preCheck() throws Exception {
+    protected boolean preCheck() throws Exception {
+    	boolean isConfirm = true;
         ExecuteResult result = null;
         try {
             result = this.gitCheck();
@@ -173,7 +175,19 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
         if(result != null && result.getCode() != 0) {
 //        	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
         	throw new Exception(result.getResult());
+        } else {
+        	try {
+        		result = this.committedLogWarn();
+        	} catch (Exception e) {
+        		System.err.println(e);
+        	}
+        	if(result != null) {
+//            	MessageDialog.openError(shell, "Local Out Of Date", result.getResult());
+//            	throw new Exception(result.getResult());
+        		isConfirm = MessageDialog.openConfirm(shell, "Committed Log Confirm?", "Did you forget merging some modified code?\n\n"+result.getResult());
+            }
         }
+        return isConfirm;
     }
     
     /*private void credentialHelper() throws Exception {
@@ -410,6 +424,17 @@ public abstract class AbstractDeployPluginHandler extends AbstractHandler implem
     	String projectPath = project.getLocation().toFile().getPath();
         String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
     	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, GITCHECK_BAT);
+//    	String projectName = project.getLocation().toFile().getName();
+//    	String tempProjectFolder = FileHandlerUtils.getTempFolder()+"/"+projectName;
+    	List<String> params = Lists.newArrayList();
+    	ExecuteResult executeResult = DeployPluginHelper.exec(rootProjectPath, cmdFile, params, true);
+        return executeResult;
+    }
+    
+    private ExecuteResult committedLogWarn() throws Exception {
+    	String projectPath = project.getLocation().toFile().getPath();
+        String rootProjectPath = FileHandlerUtils.getRootProjectPath(projectPath);
+    	String cmdFile = FileHandlerUtils.processScript(rootProjectPath, COMMITED_LOGS_BAT);
 //    	String projectName = project.getLocation().toFile().getName();
 //    	String tempProjectFolder = FileHandlerUtils.getTempFolder()+"/"+projectName;
     	List<String> params = Lists.newArrayList();

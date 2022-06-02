@@ -36,7 +36,9 @@ public class MybatisGenHandler extends AbstractDeployPluginHandler {
         this.selection = window.getSelectionService().getSelection();
         try {
         	this.init();
-            mybatisGen(event);
+        	if(this.preCheck()) {
+            	mybatisGen(event);
+        	}
 		} catch (Exception e) {
 //			MessageDialog.openError(shell, "release error", e.getMessage());
 			MultiStatus status = Exceptionhelper.createMultiStatus(e.getLocalizedMessage(), e);
